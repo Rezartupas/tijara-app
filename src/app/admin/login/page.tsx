@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
   return (
     <div className="mx-auto mt-16 max-w-sm">
       <h1 className="mb-6 text-center text-2xl font-semibold text-gray-900">Login Admin</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border bg-white p-6 shadow-sm">
+      <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border bg-white p-6 shadow-sm">
         <div>
           <label className="block text-sm font-medium text-gray-700">Username</label>
           <input

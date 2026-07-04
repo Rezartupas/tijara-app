@@ -3,8 +3,8 @@ import Link from "next/link";
 export default function SuccessPage() {
   return (
     <div className="mx-auto max-w-lg text-center">
-      <div className="rounded-full bg-green-100 p-4 inline-block">
-        <svg className="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="rounded-full bg-primary-100 p-4 inline-block">
+        <svg className="h-12 w-12 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       </div>
@@ -13,7 +13,7 @@ export default function SuccessPage() {
         Pengajuan pembiayaan Anda sedang diproses. Tim Tijara akan menghubungi Anda melalui
         kontak yang didaftarkan.
       </p>
-      <div className="mt-4 rounded-lg bg-yellow-50 p-4 text-left text-sm text-yellow-800">
+      <div className="mt-4 rounded-lg bg-gold-100 p-4 text-left text-sm text-gold-800">
         <p className="font-medium">Peringatan Syariah</p>
         <p className="mt-1">
           Harga jual dan angsuran bersifat tetap. Tidak ada bunga berbunga (riba).

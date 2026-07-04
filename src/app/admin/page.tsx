@@ -101,15 +101,15 @@ export default async function AdminPage({
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gray-100">
+            <thead className="bg-primary-100">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-700">Tanggal</th>
-                <th className="px-4 py-3 font-medium text-gray-700">Nama</th>
-                <th className="px-4 py-3 font-medium text-gray-700">NIK</th>
-                <th className="px-4 py-3 font-medium text-gray-700">Tenor</th>
-                <th className="px-4 py-3 font-medium text-gray-700">Angsuran</th>
-                <th className="px-4 py-3 font-medium text-gray-700">Status</th>
-                <th className="px-4 py-3 font-medium text-gray-700"></th>
+                <th className="px-4 py-3 font-semibold text-primary-800">Tanggal</th>
+                <th className="px-4 py-3 font-semibold text-primary-800">Nama</th>
+                <th className="px-4 py-3 font-semibold text-primary-800">NIK</th>
+                <th className="px-4 py-3 font-semibold text-primary-800">Tenor</th>
+                <th className="px-4 py-3 font-semibold text-primary-800">Angsuran</th>
+                <th className="px-4 py-3 font-semibold text-primary-800">Status</th>
+                <th className="px-4 py-3 font-semibold text-primary-800"></th>
               </tr>
             </thead>
             <tbody className="divide-y">
