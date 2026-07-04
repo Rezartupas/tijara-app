@@ -11,7 +11,7 @@ export default function AkadModal({ open, onClose, onAgree }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
+      <div className="max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
         <h2 className="text-lg font-bold text-gray-900">Akad Murabahah & Wakalah bil Ujrah</h2>
         <div className="mt-4 space-y-3 text-sm leading-relaxed text-gray-700">
           <p>
@@ -38,13 +38,13 @@ export default function AkadModal({ open, onClose, onAgree }: Props) {
         <div className="mt-6 flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Batal
           </button>
           <button
             onClick={onAgree}
-            className="flex-1 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+            className="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
           >
             Setuju & Lanjutkan
           </button>
