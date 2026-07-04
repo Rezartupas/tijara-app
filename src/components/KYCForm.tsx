@@ -122,6 +122,12 @@ export default function KYCForm() {
   if (step === 0) {
     return (
       <form className="space-y-4">
+        <div className="mb-6 flex items-center justify-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-primary-600" />
+          <span className="h-px w-8 bg-gray-300" />
+          <span className="h-2.5 w-2.5 rounded-full bg-gray-300" />
+        </div>
+        <p className="mb-4 text-center text-xs text-gray-500">Langkah 1 dari 2</p>
         <h2 className="text-lg font-semibold text-gray-900">Data Diri</h2>
         {MAIN_FIELDS.map((field) => (
           <div key={field}>
@@ -172,6 +178,12 @@ export default function KYCForm() {
 
   return (
     <div className="space-y-4">
+      <div className="mb-6 flex items-center justify-center gap-2">
+        <span className="h-2.5 w-2.5 rounded-full bg-primary-600" />
+        <span className="h-px w-8 bg-gray-300" />
+        <span className="h-2.5 w-2.5 rounded-full bg-primary-600" />
+      </div>
+      <p className="mb-4 text-center text-xs text-gray-500">Langkah 2 dari 2</p>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">Upload Dokumen</h2>
         <button
