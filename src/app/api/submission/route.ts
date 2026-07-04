@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const REQUIRED_FIELDS = ["fullName", "nik", "address", "occupation", "emergencyContact"] as const;
+const REQUIRED_FIELDS = ["fullName", "nik", "phoneNumber", "address", "occupation", "emergencyName", "emergencyRelationship", "emergencyPhone"] as const;
 
 function extFromType(mime: string): string {
   if (mime === "image/png") return ".png";

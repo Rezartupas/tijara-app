@@ -9,13 +9,17 @@ import AkadModal from "./AkadModal";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png"];
+const PHONE_REGEX = /^(0|62)[0-9]{8,13}$/;
 
 const kycSchema = z.object({
   fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
   nik: z.string().length(16, "NIK harus 16 digit"),
+  phoneNumber: z.string().regex(PHONE_REGEX, "Nomor HP tidak valid. Gunakan format 08xx atau 62xx"),
   address: z.string().min(10, "Alamat minimal 10 karakter"),
   occupation: z.string().min(3, "Pekerjaan wajib diisi"),
-  emergencyContact: z.string().min(10, "Kontak darurat minimal 10 digit"),
+  emergencyName: z.string().min(3, "Nama kontak darurat minimal 3 karakter"),
+  emergencyRelationship: z.string().min(2, "Hubungan wajib diisi"),
+  emergencyPhone: z.string().regex(PHONE_REGEX, "Nomor HP kontak darurat tidak valid"),
 });
 
 type KYCFormValues = z.infer<typeof kycSchema>;
@@ -48,6 +52,17 @@ export default function KYCForm() {
     resolver: zodResolver(kycSchema),
   });
 
+  const FIELD_LABELS: Record<string, string> = {
+    fullName: "Nama Lengkap",
+    nik: "NIK",
+    phoneNumber: "Nomor HP (WhatsApp)",
+    address: "Alamat Domisili",
+    occupation: "Pekerjaan",
+    emergencyName: "Nama Kontak Darurat",
+    emergencyRelationship: "Hubungan dengan Pengaju",
+    emergencyPhone: "Nomor HP Kontak Darurat",
+  };
+
   async function nextStep() {
     const valid = await trigger();
     if (valid) setStep(1);
@@ -72,9 +87,12 @@ export default function KYCForm() {
       const formData = new FormData();
       formData.append("fullName", values.fullName);
       formData.append("nik", values.nik);
+      formData.append("phoneNumber", values.phoneNumber);
       formData.append("address", values.address);
       formData.append("occupation", values.occupation);
-      formData.append("emergencyContact", values.emergencyContact);
+      formData.append("emergencyName", values.emergencyName);
+      formData.append("emergencyRelationship", values.emergencyRelationship);
+      formData.append("emergencyPhone", values.emergencyPhone);
 
       const productRaw = sessionStorage.getItem("tijara_product");
       if (productRaw) formData.append("product", productRaw);
@@ -98,27 +116,49 @@ export default function KYCForm() {
     }
   }
 
+  const MAIN_FIELDS = ["fullName", "nik", "phoneNumber", "address", "occupation"] as const;
+  const EMERGENCY_FIELDS = ["emergencyName", "emergencyRelationship", "emergencyPhone"] as const;
+
   if (step === 0) {
     return (
       <form className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-900">Data Diri</h2>
-        {(["fullName", "nik", "address", "occupation", "emergencyContact"] as const).map((field) => (
+        {MAIN_FIELDS.map((field) => (
           <div key={field}>
             <label className="block text-sm font-medium text-gray-700">
-              {field === "fullName" && "Nama Lengkap"}
-              {field === "nik" && "NIK"}
-              {field === "address" && "Alamat Domisili"}
-              {field === "occupation" && "Pekerjaan"}
-              {field === "emergencyContact" && "Kontak Darurat"}
+              {FIELD_LABELS[field]}
             </label>
             <input
               id={field}
+              type={field === "phoneNumber" ? "tel" : "text"}
               {...register(field)}
+              placeholder={field === "phoneNumber" ? "08123456789" : undefined}
               className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
             />
             {errors[field] && <p className="mt-1 text-xs text-red-600">{errors[field].message}</p>}
           </div>
         ))}
+
+        <div className="border-t pt-4">
+          <h3 className="text-sm font-semibold text-gray-800">Kontak Darurat</h3>
+          <p className="mb-3 text-xs text-gray-500">Siapa yang bisa dihubungi jika terjadi sesuatu?</p>
+          {EMERGENCY_FIELDS.map((field) => (
+            <div key={field} className="mt-3">
+              <label className="block text-sm font-medium text-gray-700">
+                {FIELD_LABELS[field]}
+              </label>
+              <input
+                id={field}
+                type={field === "emergencyPhone" ? "tel" : "text"}
+                {...register(field)}
+                placeholder={field === "emergencyPhone" ? "08123456789" : undefined}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              />
+              {errors[field] && <p className="mt-1 text-xs text-red-600">{errors[field].message}</p>}
+            </div>
+          ))}
+        </div>
+
         <button
           type="button"
           onClick={nextStep}

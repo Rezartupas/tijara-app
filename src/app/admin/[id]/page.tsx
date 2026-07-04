@@ -8,9 +8,12 @@ interface DetailData {
   id: string;
   fullName: string;
   nik: string;
+  phoneNumber: string;
   address: string;
   occupation: string;
-  emergencyContact: string;
+  emergencyName: string;
+  emergencyRelationship: string;
+  emergencyPhone: string;
   submittedAt: string;
   agreedToAkad: boolean;
   product?: Record<string, unknown>;
@@ -62,9 +65,11 @@ export default async function DetailPage({ params }: { params: { id: string } })
               ["Tanggal", new Date(data.submittedAt).toLocaleString("id-ID")],
               ["Nama Lengkap", data.fullName],
               ["NIK", data.nik],
+              ["No. HP (WhatsApp)", data.phoneNumber],
               ["Alamat", data.address],
               ["Pekerjaan", data.occupation],
-              ["Kontak Darurat", data.emergencyContact],
+              ["Kontak Darurat", `${data.emergencyName} (${data.emergencyRelationship})`],
+              ["No. HP Darurat", data.emergencyPhone],
               ["Setuju Akad", data.agreedToAkad ? "Ya" : "Tidak"],
             ].map(([label, value]) => (
               <tr key={label} className="border-b">

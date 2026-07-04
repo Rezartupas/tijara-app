@@ -18,9 +18,12 @@ export interface SimulationResult {
 export interface KYCData {
   fullName: string;
   nik: string;
+  phoneNumber: string;
   address: string;
   occupation: string;
-  emergencyContact: string;
+  emergencyName: string;
+  emergencyRelationship: string;
+  emergencyPhone: string;
   ktpPhoto: File | null;
   selfiePhoto: File | null;
   agreedToAkad: boolean;
