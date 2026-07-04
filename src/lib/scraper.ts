@@ -1,14 +1,19 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { Product } from "./types";
+import { isAllowedMarketplace } from "./constants";
 
 function detectMarketplace(url: string): string {
-  if (url.includes("shopee.co.id")) return "shopee.co.id";
-  if (url.includes("tokopedia.com")) return "tokopedia.com";
+  try {
+    const hostname = new URL(url).hostname;
+    if (hostname.includes("shopee.co.id")) return "shopee.co.id";
+    if (hostname.includes("tokopedia.com")) return "tokopedia.com";
+  } catch {}
   return "unknown";
 }
 
 export async function scrapeProduct(url: string): Promise<Product> {
+  if (!isAllowedMarketplace(url)) throw new Error("Marketplace tidak didukung.");
   const marketplace = detectMarketplace(url);
   const { data: html } = await axios.get(url, {
     headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },

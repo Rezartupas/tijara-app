@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import AkadModal from "./AkadModal";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png"];
 
 const kycSchema = z.object({
   fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
@@ -76,8 +76,8 @@ export default function KYCForm() {
       formData.append("occupation", values.occupation);
       formData.append("emergencyContact", values.emergencyContact);
 
-      const productParam = searchParams.get("product");
-      if (productParam) formData.append("product", productParam);
+      const productRaw = sessionStorage.getItem("tijara_product");
+      if (productRaw) formData.append("product", productRaw);
       const tenor = searchParams.get("tenor");
       if (tenor) formData.append("tenor", tenor);
       const angsuran = searchParams.get("angsuran");

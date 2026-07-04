@@ -1,0 +1,1066 @@
+diff --git a/.gitignore b/.gitignore
+index 7c8ed23..5b44ed3 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,3 +1,4 @@
+ node_modules/
+ .next/
+ out/
++data/
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..ab9811b
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,34 @@
++# Tijara — Platform Pembiayaan Syariah
++
++Platform pembiayaan syariah berbasis link e-commerce. Pengguna cukup menempelkan tautan produk
++dari Tokopedia atau Shopee untuk mendapatkan simulasi cicilan dengan akad Murabahah & Wakalah
++bil Ujrah.
++
++## Tech Stack
++
++- **Frontend:** Next.js 14+ (App Router), TypeScript, Tailwind CSS
++- **Backend:** Next.js API Routes, Cheerio + axios (scraping)
++- **Testing:** Vitest
++
++## Getting Started
++
++```bash
++npm install
++npm run dev
++```
++
++Open [http://localhost:3000](http://localhost:3000).
++
++## Scripts
++
++| Command | Description |
++|---------|-------------|
++| `npm run dev` | Start development server |
++| `npm run build` | Build for production |
++| `npm start` | Start production server |
++| `npm test` | Run tests |
++
++## Akad Scheme
++
++- **Murabahah:** Jual beli dengan margin keuntungan 4,5% per bulan (flat)
++- **Wakalah bil Ujrah:** Perwakilan untuk pengadaan barang dari marketplace
+diff --git a/package.json b/package.json
+index 2dd61d5..797110f 100644
+--- a/package.json
++++ b/package.json
+@@ -8,26 +8,38 @@
+   },
+   "scripts": {
+     "dev": "next dev",
+     "build": "next build",
+     "start": "next start",
+-    "lint": "next lint"
++    "lint": "next lint",
++    "test": "vitest run",
++    "test:watch": "vitest"
+   },
+   "keywords": [],
+   "author": "",
+   "license": "ISC",
+   "type": "commonjs",
+   "dependencies": {
++    "@hookform/resolvers": "^5.4.0",
++    "axios": "^1.18.1",
++    "cheerio": "^1.2.0",
+     "next": "^14.2.35",
+     "react": "^18.3.1",
+-    "react-dom": "^18.3.1"
++    "react-dom": "^18.3.1",
++    "react-hook-form": "^7.80.0",
++    "zod": "^4.4.3"
+   },
+   "devDependencies": {
++    "@testing-library/jest-dom": "^6.9.1",
++    "@testing-library/react": "^16.3.2",
++    "@types/cheerio": "^0.22.35",
+     "@types/node": "^26.1.0",
+     "@types/react": "^19.2.17",
+     "@types/react-dom": "^19.2.3",
+     "autoprefixer": "^10.5.2",
++    "jsdom": "^29.1.1",
+     "postcss": "^8.5.16",
+     "tailwindcss": "^3.4.19",
+-    "typescript": "^6.0.3"
++    "typescript": "^6.0.3",
++    "vitest": "^4.1.9"
+   }
+ }
+diff --git a/src/app/api/scrape/route.ts b/src/app/api/scrape/route.ts
+new file mode 100644
+index 0000000..b4cade5
+--- /dev/null
++++ b/src/app/api/scrape/route.ts
+@@ -0,0 +1,27 @@
++import { NextRequest, NextResponse } from "next/server";
++import { scrapeProduct } from "@/lib/scraper";
++import { isAllowedMarketplace } from "@/lib/constants";
++
++export async function POST(request: NextRequest) {
++  try {
++    const body = await request.json();
++    const { url } = body;
++
++    if (!url || typeof url !== "string") {
++      return NextResponse.json({ error: "URL tidak valid." }, { status: 400 });
++    }
++
++    if (!isAllowedMarketplace(url)) {
++      return NextResponse.json(
++        { error: "Marketplace tidak didukung. Gunakan tautan dari Tokopedia atau Shopee." },
++        { status: 400 }
++      );
++    }
++
++    const product = await scrapeProduct(url);
++    return NextResponse.json({ product });
++  } catch (err) {
++    const message = err instanceof Error ? err.message : "Gagal memproses tautan.";
++    return NextResponse.json({ error: message }, { status: 500 });
++  }
++}
+diff --git a/src/app/api/submission/route.ts b/src/app/api/submission/route.ts
+new file mode 100644
+index 0000000..c32f2ae
+--- /dev/null
++++ b/src/app/api/submission/route.ts
+@@ -0,0 +1,61 @@
++import { NextRequest, NextResponse } from "next/server";
++
++const REQUIRED_FIELDS = ["fullName", "nik", "address", "occupation", "emergencyContact"] as const;
++
++export async function POST(request: NextRequest) {
++  try {
++    const formData = await request.formData();
++    const fullName = formData.get("fullName") as string | null;
++    const nik = formData.get("nik") as string | null;
++
++    if (!fullName || !nik) {
++      return NextResponse.json({ error: "Data tidak lengkap." }, { status: 400 });
++    }
++
++    const fs = await import("fs/promises");
++    const submissionsDir = process.cwd() + "/data/submissions";
++    await fs.mkdir(submissionsDir, { recursive: true });
++
++    const data: Record<string, unknown> = {
++      id: `submission-${Date.now()}`,
++      submittedAt: new Date().toISOString(),
++    };
++
++    for (const field of REQUIRED_FIELDS) {
++      const val = formData.get(field);
++      if (val) data[field] = val;
++    }
++
++    const productRaw = formData.get("product");
++    if (productRaw) {
++      try {
++        data.product = JSON.parse(productRaw as string);
++      } catch {
++        data.product = productRaw;
++      }
++    }
++    const tenor = formData.get("tenor");
++    if (tenor) data.tenor = Number(tenor);
++    const angsuran = formData.get("angsuran");
++    if (angsuran) data.angsuran = Number(angsuran);
++    const total = formData.get("total");
++    if (total) data.total = Number(total);
++
++    await fs.writeFile(`${submissionsDir}/${data.id}.json`, JSON.stringify(data, null, 2));
++
++    const ktp = formData.get("ktp") as File | null;
++    if (ktp) {
++      const buffer = Buffer.from(await ktp.arrayBuffer());
++      await fs.writeFile(`${submissionsDir}/${nik}-ktp.jpg`, buffer);
++    }
++    const selfie = formData.get("selfie") as File | null;
++    if (selfie) {
++      const buffer = Buffer.from(await selfie.arrayBuffer());
++      await fs.writeFile(`${submissionsDir}/${nik}-selfie.jpg`, buffer);
++    }
++
++    return NextResponse.json({ success: true, id: data.id });
++  } catch {
++    return NextResponse.json({ error: "Gagal memproses pengajuan." }, { status: 500 });
++  }
++}
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 2557280..355b1e1 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -1,10 +1,26 @@
++import LinkInput from "@/components/LinkInput";
++
+ export default function HomePage() {
+   return (
+     <section className="flex flex-col items-center text-center">
+-      <h2 className="text-2xl font-semibold">Belanja Sekarang, Bayar Nanti</h2>
+-      <p className="mt-2 text-gray-600">
+-        Tempelkan tautan produk marketplace untuk mulai simulasi cicilan syariah.
++      <h2 className="mt-8 text-3xl font-semibold text-gray-900">
++        Belanja Sekarang, Bayar Nanti
++      </h2>
++      <p className="mt-2 max-w-md text-gray-600">
++        Tempelkan tautan produk dari Tokopedia atau Shopee untuk memulai simulasi
++        cicilan syariah tanpa riba.
+       </p>
++      <div className="mt-8 w-full max-w-xl">
++        <LinkInput />
++      </div>
++      <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-4">
++        {["Salin Tautan", "Tempel di Sini", "Pilih Tenor", "Ajukan Pembiayaan"].map((step, i) => (
++          <div key={step} className="rounded-lg bg-white p-4 shadow-sm">
++            <span className="text-lg font-bold text-primary-500">0{i + 1}</span>
++            <p className="mt-1 text-sm text-gray-600">{step}</p>
++          </div>
++        ))}
++      </div>
+     </section>
+   );
+ }
+diff --git a/src/app/pengajuan/page.tsx b/src/app/pengajuan/page.tsx
+new file mode 100644
+index 0000000..38ba47c
+--- /dev/null
++++ b/src/app/pengajuan/page.tsx
+@@ -0,0 +1,13 @@
++import { Suspense } from "react";
++import KYCForm from "@/components/KYCForm";
++
++export default function PengajuanPage() {
++  return (
++    <div className="mx-auto max-w-lg">
++      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Pengajuan Pembiayaan</h1>
++      <Suspense fallback={<p className="text-center text-gray-500">Memuat...</p>}>
++        <KYCForm />
++      </Suspense>
++    </div>
++  );
++}
+diff --git a/src/app/pengajuan/success/page.tsx b/src/app/pengajuan/success/page.tsx
+new file mode 100644
+index 0000000..36a8fe9
+--- /dev/null
++++ b/src/app/pengajuan/success/page.tsx
+@@ -0,0 +1,32 @@
++import Link from "next/link";
++
++export default function SuccessPage() {
++  return (
++    <div className="mx-auto max-w-lg text-center">
++      <div className="rounded-full bg-green-100 p-4 inline-block">
++        <svg className="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
++        </svg>
++      </div>
++      <h1 className="mt-6 text-2xl font-semibold text-gray-900">Pengajuan Terkirim!</h1>
++      <p className="mt-2 text-gray-600">
++        Pengajuan pembiayaan Anda sedang diproses. Tim Tijara akan menghubungi Anda melalui
++        kontak yang didaftarkan.
++      </p>
++      <div className="mt-4 rounded-lg bg-yellow-50 p-4 text-left text-sm text-yellow-800">
++        <p className="font-medium">Peringatan Syariah</p>
++        <p className="mt-1">
++          Harga jual dan angsuran bersifat tetap. Tidak ada bunga berbunga (riba).
++          Keterlambatan pembayaran akan dikenakan ta&apos;zir (denda sosial) yang disalurkan
++          sebagai dana kebajikan.
++        </p>
++      </div>
++      <Link
++        href="/"
++        className="mt-6 inline-block w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white hover:bg-primary-700"
++      >
++        Ajukan Lagi
++      </Link>
++    </div>
++  );
++}
+diff --git a/src/app/simulasi/page.tsx b/src/app/simulasi/page.tsx
+new file mode 100644
+index 0000000..083803c
+--- /dev/null
++++ b/src/app/simulasi/page.tsx
+@@ -0,0 +1,94 @@
++"use client";
++
++import { useSearchParams } from "next/navigation";
++import { useEffect, useState, useCallback, Suspense } from "react";
++import { useRouter } from "next/navigation";
++import LinkInput from "@/components/LinkInput";
++import ProductCard from "@/components/ProductCard";
++import SimulationCalculator from "@/components/SimulationCalculator";
++import SimulationBreakdown from "@/components/SimulationBreakdown";
++import type { Product, SimulationResult } from "@/lib/types";
++
++function SimulationContent() {
++  const searchParams = useSearchParams();
++  const router = useRouter();
++  const url = searchParams.get("url");
++
++  const [product, setProduct] = useState<Product | null>(null);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState("");
++  const [simulation, setSimulation] = useState<SimulationResult | null>(null);
++
++  useEffect(() => {
++    if (!url) {
++      setLoading(false);
++      return;
++    }
++    fetch("/api/scrape", {
++      method: "POST",
++      headers: { "Content-Type": "application/json" },
++      body: JSON.stringify({ url }),
++    })
++      .then((res) => res.json())
++      .then((data) => {
++        if (data.product) {
++          setProduct(data.product);
++        } else {
++          setError(data.error || "Gagal memuat produk.");
++        }
++      })
++      .catch(() => setError("Gagal menghubungi server."))
++      .finally(() => setLoading(false));
++  }, [url]);
++
++  const handleSimulationChange = useCallback((result: SimulationResult) => {
++    setSimulation(result);
++  }, []);
++
++  if (!url) {
++    return (
++      <div className="flex flex-col items-center text-center">
++        <h2 className="text-xl font-semibold">Masukkan Tautan Produk</h2>
++        <div className="mt-4 w-full max-w-xl">
++          <LinkInput />
++        </div>
++      </div>
++    );
++  }
++
++  if (loading) {
++    return <p className="text-center text-gray-500">Memuat data produk...</p>;
++  }
++
++  if (error) {
++    return <p className="text-center text-red-600">{error}</p>;
++  }
++
++  if (!product) return null;
++
++  return (
++    <div className="space-y-6">
++      <ProductCard product={product} />
++      <SimulationCalculator product={product} onSimulationChange={handleSimulationChange} />
++      {simulation && (
++        <>
++          <SimulationBreakdown result={simulation} />
++          <button
++            onClick={() => router.push(`/pengajuan?product=${encodeURIComponent(JSON.stringify(product))}&tenor=${simulation.tenorMonths}&angsuran=${simulation.monthlyInstallment}&total=${simulation.totalPayment}`)}
++            className="w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white shadow transition hover:bg-primary-700"
++          >
++            Ajukan Pembiayaan
++          </button>
++        </>
++      )}
++    </div>
++  );
++}
++
++export default function SimulasiPage() {
++  return (
++    <Suspense fallback={<p className="text-center text-gray-500">Memuat...</p>}>
++      <SimulationContent />
++    </Suspense>
++  );
++}
+diff --git a/src/components/AkadModal.tsx b/src/components/AkadModal.tsx
+new file mode 100644
+index 0000000..4b0b533
+--- /dev/null
++++ b/src/components/AkadModal.tsx
+@@ -0,0 +1,55 @@
++"use client";
++
++interface Props {
++  open: boolean;
++  onClose: () => void;
++  onAgree: () => void;
++}
++
++export default function AkadModal({ open, onClose, onAgree }: Props) {
++  if (!open) return null;
++
++  return (
++    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
++      <div className="max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
++        <h2 className="text-lg font-bold text-gray-900">Akad Murabahah & Wakalah bil Ujrah</h2>
++        <div className="mt-4 space-y-3 text-sm leading-relaxed text-gray-700">
++          <p>
++            Dengan mengklik "Setuju", Anda menyatakan telah membaca, memahami, dan menyetujui
++            seluruh ketentuan akad berikut:
++          </p>
++          <p>
++            <strong>Wakalah bil Ujrah:</strong> Anda memberikan kuasa kepada Tijara untuk mewakili
++            Anda dalam memilih, memeriksa, dan memastikan spesifikasi barang yang dibeli dari
++            marketplace e-commerce.
++          </p>
++          <p>
++            <strong>Murabahah:</strong> Tijara membeli barang secara tunai dari merchant dan
++            menjualnya kepada Anda sebesar harga perolehan ditambah margin keuntungan (ribhun)
++            sebesar 4,5% per bulan yang disepakati di awal. Harga jual dan angsuran bersifat tetap
++            (fixed) selama masa akad.
++          </p>
++          <p>
++            Anda setuju untuk membayar angsuran tepat waktu setiap bulan. Keterlambatan yang
++            disengaja akan dikenakan ta&apos;zir (denda sosial) yang disalurkan sebagai dana
++            kebajikan, bukan pendapatan perusahaan.
++          </p>
++        </div>
++        <div className="mt-6 flex gap-3">
++          <button
++            onClick={onClose}
++            className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
++          >
++            Batal
++          </button>
++          <button
++            onClick={onAgree}
++            className="flex-1 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
++          >
++            Setuju & Lanjutkan
++          </button>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/components/KYCForm.tsx b/src/components/KYCForm.tsx
+new file mode 100644
+index 0000000..1a5f949
+--- /dev/null
++++ b/src/components/KYCForm.tsx
+@@ -0,0 +1,177 @@
++"use client";
++
++import { useState } from "react";
++import { useForm } from "react-hook-form";
++import { useSearchParams } from "next/navigation";
++import { z } from "zod";
++import { zodResolver } from "@hookform/resolvers/zod";
++import AkadModal from "./AkadModal";
++
++const MAX_FILE_SIZE = 5 * 1024 * 1024;
++const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
++
++const kycSchema = z.object({
++  fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
++  nik: z.string().length(16, "NIK harus 16 digit"),
++  address: z.string().min(10, "Alamat minimal 10 karakter"),
++  occupation: z.string().min(3, "Pekerjaan wajib diisi"),
++  emergencyContact: z.string().min(10, "Kontak darurat minimal 10 digit"),
++});
++
++type KYCFormValues = z.infer<typeof kycSchema>;
++
++function validateFile(file: File | null): string | null {
++  if (!file) return "Wajib diunggah.";
++  if (!ALLOWED_FILE_TYPES.includes(file.type)) return "Format file harus JPG atau PNG.";
++  if (file.size > MAX_FILE_SIZE) return "Ukuran file maksimal 5 MB.";
++  return null;
++}
++
++export default function KYCForm() {
++  const searchParams = useSearchParams();
++  const [step, setStep] = useState(0);
++  const [ktpFile, setKtpFile] = useState<File | null>(null);
++  const [selfieFile, setSelfieFile] = useState<File | null>(null);
++  const [ktpError, setKtpError] = useState("");
++  const [selfieError, setSelfieError] = useState("");
++  const [showAkad, setShowAkad] = useState(false);
++  const [submitting, setSubmitting] = useState(false);
++  const [submitError, setSubmitError] = useState("");
++
++  const {
++    register,
++    getValues,
++    handleSubmit,
++    trigger,
++    formState: { errors },
++  } = useForm<KYCFormValues>({
++    resolver: zodResolver(kycSchema),
++  });
++
++  async function nextStep() {
++    const valid = await trigger();
++    if (valid) setStep(1);
++  }
++
++  function onSubmit() {
++    const ktpErr = validateFile(ktpFile);
++    const selfieErr = validateFile(selfieFile);
++    setKtpError(ktpErr || "");
++    setSelfieError(selfieErr || "");
++    if (ktpErr || selfieErr) return;
++    setShowAkad(true);
++  }
++
++  async function handleAgree() {
++    setShowAkad(false);
++    setSubmitting(true);
++    setSubmitError("");
++
++    try {
++      const values = getValues();
++      const formData = new FormData();
++      formData.append("fullName", values.fullName);
++      formData.append("nik", values.nik);
++      formData.append("address", values.address);
++      formData.append("occupation", values.occupation);
++      formData.append("emergencyContact", values.emergencyContact);
++
++      const productParam = searchParams.get("product");
++      if (productParam) formData.append("product", productParam);
++      const tenor = searchParams.get("tenor");
++      if (tenor) formData.append("tenor", tenor);
++      const angsuran = searchParams.get("angsuran");
++      if (angsuran) formData.append("angsuran", angsuran);
++      const total = searchParams.get("total");
++      if (total) formData.append("total", total);
++
++      if (ktpFile) formData.append("ktp", ktpFile);
++      if (selfieFile) formData.append("selfie", selfieFile);
++
++      const res = await fetch("/api/submission", { method: "POST", body: formData });
++      if (!res.ok) throw new Error("Gagal mengirim pengajuan.");
++      window.location.href = "/pengajuan/success";
++    } catch {
++      setSubmitError("Gagal mengirim pengajuan. Silakan coba lagi.");
++    } finally {
++      setSubmitting(false);
++    }
++  }
++
++  if (step === 0) {
++    return (
++      <form className="space-y-4">
++        <h2 className="text-lg font-semibold text-gray-900">Data Diri</h2>
++        {(["fullName", "nik", "address", "occupation", "emergencyContact"] as const).map((field) => (
++          <div key={field}>
++            <label className="block text-sm font-medium text-gray-700">
++              {field === "fullName" && "Nama Lengkap"}
++              {field === "nik" && "NIK"}
++              {field === "address" && "Alamat Domisili"}
++              {field === "occupation" && "Pekerjaan"}
++              {field === "emergencyContact" && "Kontak Darurat"}
++            </label>
++            <input
++              id={field}
++              {...register(field)}
++              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
++            />
++            {errors[field] && <p className="mt-1 text-xs text-red-600">{errors[field].message}</p>}
++          </div>
++        ))}
++        <button
++          type="button"
++          onClick={nextStep}
++          className="w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white hover:bg-primary-700"
++        >
++          Selanjutnya
++        </button>
++      </form>
++    );
++  }
++
++  return (
++    <div className="space-y-4">
++      <div className="flex items-center justify-between">
++        <h2 className="text-lg font-semibold text-gray-900">Upload Dokumen</h2>
++        <button
++          type="button"
++          onClick={() => setStep(0)}
++          className="text-sm text-primary-600 hover:underline"
++        >
++          &larr; Kembali
++        </button>
++      </div>
++      <div>
++        <label className="block text-sm font-medium text-gray-700">Foto KTP</label>
++        <input
++          type="file"
++          accept="image/jpeg,image/png"
++          onChange={(e) => { setKtpFile(e.target.files?.[0] || null); setKtpError(""); }}
++          className="mt-1 w-full text-sm"
++        />
++        {ktpError && <p className="mt-1 text-xs text-red-600">{ktpError}</p>}
++      </div>
++      <div>
++        <label className="block text-sm font-medium text-gray-700">Swafoto dengan KTP</label>
++        <input
++          type="file"
++          accept="image/jpeg,image/png"
++          onChange={(e) => { setSelfieFile(e.target.files?.[0] || null); setSelfieError(""); }}
++          className="mt-1 w-full text-sm"
++        />
++        {selfieError && <p className="mt-1 text-xs text-red-600">{selfieError}</p>}
++      </div>
++      {submitError && <p className="text-sm text-red-600">{submitError}</p>}
++      <button
++        type="button"
++        onClick={handleSubmit(onSubmit)}
++        disabled={submitting}
++        className="w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white hover:bg-primary-700 disabled:opacity-50"
++      >
++        {submitting ? "Mengirim..." : "Ajukan Pembiayaan"}
++      </button>
++      <AkadModal open={showAkad} onClose={() => setShowAkad(false)} onAgree={handleAgree} />
++    </div>
++  );
++}
+diff --git a/src/components/LinkInput.tsx b/src/components/LinkInput.tsx
+new file mode 100644
+index 0000000..d666ad7
+--- /dev/null
++++ b/src/components/LinkInput.tsx
+@@ -0,0 +1,67 @@
++"use client";
++
++import { useState, FormEvent } from "react";
++import { useRouter } from "next/navigation";
++
++export default function LinkInput() {
++  const [url, setUrl] = useState("");
++  const [loading, setLoading] = useState(false);
++  const [error, setError] = useState("");
++  const router = useRouter();
++
++  async function handleSubmit(e: FormEvent) {
++    e.preventDefault();
++    setError("");
++
++    if (!url.trim()) {
++      setError("Silakan masukkan tautan produk.");
++      return;
++    }
++
++    setLoading(true);
++    try {
++      const res = await fetch("/api/scrape", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ url: url.trim() }),
++      });
++
++      const data = await res.json();
++      if (!res.ok) {
++        setError(data.error || "Gagal memproses tautan.");
++        return;
++      }
++
++      router.push(`/simulasi?url=${encodeURIComponent(url.trim())}`);
++    } catch {
++      setError("Terjadi kesalahan. Silakan coba lagi.");
++    } finally {
++      setLoading(false);
++    }
++  }
++
++  return (
++    <form onSubmit={handleSubmit} className="w-full max-w-xl space-y-4">
++      <label htmlFor="link-input" className="block text-sm font-medium text-gray-700">
++        Tempelkan tautan produk
++      </label>
++      <input
++        id="link-input"
++        type="url"
++        value={url}
++        onChange={(e) => setUrl(e.target.value)}
++        placeholder="https://tokopedia.com/... atau https://shopee.co.id/..."
++        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
++        disabled={loading}
++      />
++      {error && <p className="text-sm text-red-600">{error}</p>}
++      <button
++        type="submit"
++        disabled={loading}
++        className="w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white shadow transition hover:bg-primary-700 disabled:opacity-50"
++      >
++        {loading ? "Memproses..." : "Cek Cicilan"}
++      </button>
++    </form>
++  );
++}
+diff --git a/src/components/ProductCard.tsx b/src/components/ProductCard.tsx
+new file mode 100644
+index 0000000..beb0b3f
+--- /dev/null
++++ b/src/components/ProductCard.tsx
+@@ -0,0 +1,20 @@
++import type { Product } from "@/lib/types";
++
++export default function ProductCard({ product }: { product: Product }) {
++  return (
++    <div className="flex gap-4 rounded-lg border bg-white p-4 shadow-sm">
++      <img
++        src={product.image || "/placeholder.svg"}
++        alt={product.title}
++        className="h-24 w-24 rounded object-cover"
++      />
++      <div className="flex-1">
++        <h3 className="font-medium text-gray-900">{product.title}</h3>
++        <p className="mt-1 text-xs text-gray-500">{product.marketplace}</p>
++        <p className="mt-1 text-lg font-bold text-primary-600">
++          Rp{product.price.toLocaleString("id-ID")}
++        </p>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/components/SimulationBreakdown.tsx b/src/components/SimulationBreakdown.tsx
+new file mode 100644
+index 0000000..9c37e5e
+--- /dev/null
++++ b/src/components/SimulationBreakdown.tsx
+@@ -0,0 +1,38 @@
++import type { SimulationResult } from "@/lib/types";
++import { MARGIN_RATE } from "@/lib/constants";
++
++export default function SimulationBreakdown({ result }: { result: SimulationResult }) {
++  return (
++    <div className="rounded-lg border bg-white p-4 shadow-sm">
++      <h3 className="mb-3 font-semibold text-gray-900">Rincian Pembiayaan</h3>
++      <table className="w-full text-sm">
++        <tbody className="space-y-2">
++          <tr className="border-b">
++            <td className="py-2 text-gray-600">Harga Barang</td>
++            <td className="py-2 text-right font-medium">
++              Rp{result.product.price.toLocaleString("id-ID")}
++            </td>
++          </tr>
++          <tr className="border-b">
++            <td className="py-2 text-gray-600">Margin ({MARGIN_RATE * 100}% × {result.tenorMonths} bln)</td>
++            <td className="py-2 text-right font-medium">
++              Rp{result.totalMargin.toLocaleString("id-ID")}
++            </td>
++          </tr>
++          <tr className="border-b border-gray-300 font-semibold">
++            <td className="py-2 text-gray-800">Total Pembayaran</td>
++            <td className="py-2 text-right text-lg text-primary-600">
++              Rp{result.totalPayment.toLocaleString("id-ID")}
++            </td>
++          </tr>
++          <tr className="text-lg font-bold">
++            <td className="py-2 text-gray-900">Angsuran / Bulan</td>
++            <td className="py-2 text-right text-primary-600">
++              Rp{result.monthlyInstallment.toLocaleString("id-ID")}
++            </td>
++          </tr>
++        </tbody>
++      </table>
++    </div>
++  );
++}
+diff --git a/src/components/SimulationCalculator.tsx b/src/components/SimulationCalculator.tsx
+new file mode 100644
+index 0000000..9baee0e
+--- /dev/null
++++ b/src/components/SimulationCalculator.tsx
+@@ -0,0 +1,53 @@
++"use client";
++
++import { useState, useCallback } from "react";
++import { MARGIN_RATE, MAX_TENOR, MIN_TENOR } from "@/lib/constants";
++import type { Product, SimulationResult } from "@/lib/types";
++
++interface Props {
++  product: Product;
++  onSimulationChange: (result: SimulationResult) => void;
++}
++
++export default function SimulationCalculator({ product, onSimulationChange }: Props) {
++  const [tenor, setTenor] = useState(12);
++
++  const updateTenor = useCallback(
++    (months: number) => {
++      const clamped = Math.max(MIN_TENOR, Math.min(MAX_TENOR, months));
++      setTenor(clamped);
++      const totalMargin = Math.round(product.price * MARGIN_RATE * clamped);
++      const totalPayment = product.price + totalMargin;
++      const monthlyInstallment = Math.round(totalPayment / clamped);
++      onSimulationChange({ product, tenorMonths: clamped, totalMargin, monthlyInstallment, totalPayment });
++    },
++    [product, onSimulationChange]
++  );
++
++  return (
++    <div className="space-y-4 rounded-lg border bg-white p-4 shadow-sm">
++      <label className="block text-sm font-medium text-gray-700">
++        Pilih Tenor Cicilan
++      </label>
++      <div className="flex items-center gap-4">
++        <input
++          type="range"
++          min={MIN_TENOR}
++          max={MAX_TENOR}
++          value={tenor}
++          onChange={(e) => updateTenor(Number(e.target.value))}
++          className="flex-1 accent-primary-600"
++        />
++        <input
++          type="number"
++          min={MIN_TENOR}
++          max={MAX_TENOR}
++          value={tenor}
++          onChange={(e) => updateTenor(Number(e.target.value))}
++          className="w-16 rounded border px-2 py-1 text-center text-sm"
++        />
++        <span className="text-sm text-gray-500">bulan</span>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/globals.css.d.ts b/src/globals.css.d.ts
+new file mode 100644
+index 0000000..cbe652d
+--- /dev/null
++++ b/src/globals.css.d.ts
+@@ -0,0 +1 @@
++declare module "*.css";
+diff --git a/src/lib/calculator.test.ts b/src/lib/calculator.test.ts
+new file mode 100644
+index 0000000..0336db6
+--- /dev/null
++++ b/src/lib/calculator.test.ts
+@@ -0,0 +1,34 @@
++import { describe, it, expect } from "vitest";
++import { calculateSimulation } from "./calculator";
++
++const mockProduct = {
++  title: "Test Product",
++  price: 1000000,
++  image: "/test.jpg",
++  description: "A test product",
++  url: "https://tokopedia.com/test",
++  marketplace: "tokopedia.com",
++};
++
++describe("calculateSimulation", () => {
++  it("calculates margin correctly for 12 months", () => {
++    const result = calculateSimulation(mockProduct, 12);
++    expect(result.totalMargin).toBe(540000); // 1,000,000 * 0.045 * 12
++    expect(result.totalPayment).toBe(1540000);
++    expect(result.monthlyInstallment).toBe(128333); // 1540000 / 12, rounded
++  });
++
++  it("calculates margin correctly for 1 month", () => {
++    const result = calculateSimulation(mockProduct, 1);
++    expect(result.totalMargin).toBe(45000);
++    expect(result.totalPayment).toBe(1045000);
++    expect(result.monthlyInstallment).toBe(1045000);
++  });
++
++  it("calculates margin correctly for 24 months", () => {
++    const result = calculateSimulation(mockProduct, 24);
++    expect(result.totalMargin).toBe(1080000);
++    expect(result.totalPayment).toBe(2080000);
++    expect(result.monthlyInstallment).toBe(86667); // 2080000 / 24, rounded
++  });
++});
+diff --git a/src/lib/calculator.ts b/src/lib/calculator.ts
+new file mode 100644
+index 0000000..4233f51
+--- /dev/null
++++ b/src/lib/calculator.ts
+@@ -0,0 +1,16 @@
++import { MARGIN_RATE } from "./constants";
++import type { Product, SimulationResult } from "./types";
++
++export function calculateSimulation(product: Product, tenorMonths: number): SimulationResult {
++  const totalMargin = Math.round(product.price * MARGIN_RATE * tenorMonths);
++  const totalPayment = product.price + totalMargin;
++  const monthlyInstallment = Math.round(totalPayment / tenorMonths);
++
++  return {
++    product,
++    tenorMonths,
++    totalMargin,
++    monthlyInstallment,
++    totalPayment,
++  };
++}
+diff --git a/src/lib/constants.ts b/src/lib/constants.ts
+new file mode 100644
+index 0000000..f0d7a0a
+--- /dev/null
++++ b/src/lib/constants.ts
+@@ -0,0 +1,13 @@
++export const MARGIN_RATE = 0.045; // 4.5% per month flat
++export const MAX_TENOR = 24; // months
++export const MIN_TENOR = 1; // months
++export const ALLOWED_MARKETPLACES = ["shopee.co.id", "tokopedia.com"];
++
++export function isAllowedMarketplace(url: string): boolean {
++  try {
++    const parsed = new URL(url);
++    return ALLOWED_MARKETPLACES.some((domain) => parsed.hostname.includes(domain));
++  } catch {
++    return false;
++  }
++}
+diff --git a/src/lib/scraper.test.ts b/src/lib/scraper.test.ts
+new file mode 100644
+index 0000000..40f3108
+--- /dev/null
++++ b/src/lib/scraper.test.ts
+@@ -0,0 +1,20 @@
++import { describe, it, expect, vi } from "vitest";
++import { isAllowedMarketplace } from "./constants";
++
++describe("isAllowedMarketplace", () => {
++  it("accepts tokopedia.com URLs", () => {
++    expect(isAllowedMarketplace("https://tokopedia.com/product/123")).toBe(true);
++  });
++
++  it("accepts shopee.co.id URLs", () => {
++    expect(isAllowedMarketplace("https://shopee.co.id/product/123")).toBe(true);
++  });
++
++  it("rejects unknown marketplace URLs", () => {
++    expect(isAllowedMarketplace("https://blibli.com/product/123")).toBe(false);
++  });
++
++  it("rejects invalid URLs", () => {
++    expect(isAllowedMarketplace("not-a-url")).toBe(false);
++  });
++});
+diff --git a/src/lib/scraper.ts b/src/lib/scraper.ts
+new file mode 100644
+index 0000000..a4bde9d
+--- /dev/null
++++ b/src/lib/scraper.ts
+@@ -0,0 +1,49 @@
++import axios from "axios";
++import * as cheerio from "cheerio";
++import type { Product } from "./types";
++
++function detectMarketplace(url: string): string {
++  if (url.includes("shopee.co.id")) return "shopee.co.id";
++  if (url.includes("tokopedia.com")) return "tokopedia.com";
++  return "unknown";
++}
++
++export async function scrapeProduct(url: string): Promise<Product> {
++  const marketplace = detectMarketplace(url);
++  const { data: html } = await axios.get(url, {
++    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
++    timeout: 10000,
++  });
++  const $ = cheerio.load(html);
++
++  let title = "";
++  let price = 0;
++  let image = "";
++  let description = "";
++
++  if (marketplace === "tokopedia.com") {
++    title = $('meta[property="og:title"]').attr("content") || $("title").text();
++    const priceText = $('meta[property="product:price:amount"]').attr("content") || "0";
++    price = parseInt(priceText.replace(/\D/g, ""), 10);
++    image = $('meta[property="og:image"]').attr("content") || "";
++    description = $('meta[property="og:description"]').attr("content") || "";
++  } else if (marketplace === "shopee.co.id") {
++    title = $('meta[property="og:title"]').attr("content") || $("title").text();
++    const priceText = $('meta[property="og:description"]').attr("content") || "0";
++    const priceMatch = priceText.match(/Rp\s?([\d.,]+)/);
++    price = priceMatch ? parseInt(priceMatch[1].replace(/[.,]/g, ""), 10) : 0;
++    image = $('meta[property="og:image"]').attr("content") || "";
++    description = priceText;
++  }
++
++  if (!title) throw new Error("Gagal membaca data produk dari tautan tersebut.");
++
++  return {
++    title: title.trim(),
++    price,
++    image,
++    description: description.trim(),
++    url,
++    marketplace,
++  };
++}
+diff --git a/src/lib/types.ts b/src/lib/types.ts
+new file mode 100644
+index 0000000..47d3f50
+--- /dev/null
++++ b/src/lib/types.ts
+@@ -0,0 +1,27 @@
++export interface Product {
++  title: string;
++  price: number;
++  image: string;
++  description: string;
++  url: string;
++  marketplace: string;
++}
++
++export interface SimulationResult {
++  product: Product;
++  tenorMonths: number;
++  totalMargin: number;
++  monthlyInstallment: number;
++  totalPayment: number;
++}
++
++export interface KYCData {
++  fullName: string;
++  nik: string;
++  address: string;
++  occupation: string;
++  emergencyContact: string;
++  ktpPhoto: File | null;
++  selfiePhoto: File | null;
++  agreedToAkad: boolean;
++}
+diff --git a/tailwind.config.ts b/tailwind.config.ts
+index c721759..fb70e24 100644
+--- a/tailwind.config.ts
++++ b/tailwind.config.ts
+@@ -7,11 +7,11 @@ const config: Config = {
+     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+   ],
+   theme: {
+     extend: {
+       colors: {
+-        primary: { 50: "#f0fdf4", 500: "#22c55e", 600: "#16a34a", 700: "#15803d" },
++        primary: { 50: "#f0fdf4", 200: "#bbf7d0", 500: "#22c55e", 600: "#16a34a", 700: "#15803d" },
+         gold: { 500: "#eab308", 600: "#ca8a04" },
+       },
+     },
+   },
+   plugins: [],
+diff --git a/tsconfig.json b/tsconfig.json
+index 1f9a3fb..4be0f5f 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -1,8 +1,9 @@
+ {
+   "compilerOptions": {
+-    "target": "es5",
++    "target": "ES2017",
++    "ignoreDeprecations": "6.0",
+     "lib": ["dom", "dom.iterable", "esnext"],
+     "allowJs": true,
+     "skipLibCheck": true,
+     "strict": true,
+     "noEmit": true,
