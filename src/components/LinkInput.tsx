@@ -51,14 +51,14 @@ export default function LinkInput() {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="https://tokopedia.com/... atau https://shopee.co.id/..."
-        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
         disabled={loading}
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white shadow transition hover:bg-primary-700 disabled:opacity-50"
+        className="w-full rounded-xl bg-primary-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
       >
         {loading ? "Memproses..." : "Cek Cicilan"}
       </button>

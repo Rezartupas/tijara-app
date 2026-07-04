@@ -99,7 +99,7 @@ export default async function AdminPage({
       {filtered.length === 0 ? (
         <p className="text-gray-500">Tidak ada pengajuan yang sesuai filter.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
+        <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-left text-sm">
             <thead className="bg-primary-100">
               <tr>

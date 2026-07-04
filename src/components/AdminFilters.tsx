@@ -51,7 +51,7 @@ export default function AdminFilters() {
         <select
           value={currentStatus}
           onChange={(e) => setParam("status", e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+          className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -66,7 +66,7 @@ export default function AdminFilters() {
           defaultValue={currentSearch}
           onChange={(e) => debouncedSearch(e.target.value)}
           placeholder="Ketik nama atau NIK..."
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+          className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
         />
       </div>
       <div>
@@ -75,7 +75,7 @@ export default function AdminFilters() {
           type="date"
           value={currentDateFrom}
           onChange={(e) => setParam("dateFrom", e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+          className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
         />
       </div>
       <div>
@@ -84,7 +84,7 @@ export default function AdminFilters() {
           type="date"
           value={currentDateTo}
           onChange={(e) => setParam("dateTo", e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+          className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
         />
       </div>
     </div>

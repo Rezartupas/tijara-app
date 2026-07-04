@@ -41,19 +41,19 @@ export default function WhatsAppButton() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Tulis pesan di sini..."
               rows={4}
-              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              className="w-full resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
             />
             <div className="mt-3 flex gap-2">
               <button
                 onClick={() => { setOpen(false); setMessage(""); }}
-                className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Batal
               </button>
               <button
                 onClick={handleSend}
                 disabled={!message.trim()}
-                className="flex-1 rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-50"
               >
                 Kirim ke WhatsApp
               </button>

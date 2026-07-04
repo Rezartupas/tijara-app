@@ -78,7 +78,7 @@ function SimulationContent() {
               sessionStorage.setItem("tijara_product", JSON.stringify(product));
               router.push(`/pengajuan?tenor=${simulation.tenorMonths}&angsuran=${simulation.monthlyInstallment}&total=${simulation.totalPayment}`);
             }}
-            className="w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white shadow transition hover:bg-primary-700"
+            className="w-full rounded-xl bg-primary-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-primary-700"
           >
             Ajukan Pembiayaan
           </button>

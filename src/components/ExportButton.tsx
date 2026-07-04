@@ -86,7 +86,7 @@ export default function ExportButton({ data }: Props) {
   return (
     <button
       onClick={handleExport}
-      className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+      className="rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
     >
       Export CSV
     </button>

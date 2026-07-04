@@ -60,7 +60,7 @@ export default async function DetailPage({ params }: { params: { id: string } })
       <Link href="/admin" className="text-sm text-primary-600 hover:underline">&larr; Kembali</Link>
       <h1 className="mb-6 mt-2 text-2xl font-semibold text-gray-900">Detail Pengajuan</h1>
 
-      <section className="space-y-4 rounded-lg border bg-white p-6">
+      <section className="space-y-4 rounded-xl border bg-white p-6 shadow-sm">
         <h2 className="text-lg font-bold text-gray-800">Data Diri</h2>
         <table className="w-full text-sm">
           <tbody>
@@ -92,7 +92,7 @@ export default async function DetailPage({ params }: { params: { id: string } })
       </section>
 
       {data.product && (
-        <section className="mt-4 space-y-4 rounded-lg border bg-white p-6">
+        <section className="mt-4 space-y-4 rounded-xl border bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-800">Produk</h2>
           <table className="w-full text-sm">
             <tbody>
@@ -116,7 +116,7 @@ export default async function DetailPage({ params }: { params: { id: string } })
       )}
 
       {data.tenor && (
-        <section className="mt-4 space-y-4 rounded-lg border bg-white p-6">
+        <section className="mt-4 space-y-4 rounded-xl border bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-800">Simulasi Pembiayaan</h2>
           <table className="w-full text-sm">
             <tbody>
@@ -138,7 +138,7 @@ export default async function DetailPage({ params }: { params: { id: string } })
       )}
 
       {(images.ktp || images.selfie) && (
-        <section className="mt-4 space-y-4 rounded-lg border bg-white p-6">
+        <section className="mt-4 space-y-4 rounded-xl border bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-800">Dokumen</h2>
           <div className="grid grid-cols-2 gap-4">
             {images.ktp && (
@@ -147,7 +147,7 @@ export default async function DetailPage({ params }: { params: { id: string } })
                 <img
                   src={`/api/admin/files/${images.ktp}`}
                   alt="KTP"
-                  className="w-full rounded border object-cover"
+                  className="w-full rounded-lg border object-cover"
                 />
               </div>
             )}
@@ -157,7 +157,7 @@ export default async function DetailPage({ params }: { params: { id: string } })
                 <img
                   src={`/api/admin/files/${images.selfie}`}
                   alt="Selfie"
-                  className="w-full rounded border object-cover"
+                  className="w-full rounded-lg border object-cover"
                 />
               </div>
             )}

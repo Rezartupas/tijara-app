@@ -139,7 +139,7 @@ export default function KYCForm() {
               type={field === "phoneNumber" ? "tel" : "text"}
               {...register(field)}
               placeholder={field === "phoneNumber" ? "08123456789" : undefined}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
             />
             {errors[field] && <p className="mt-1 text-xs text-red-600">{errors[field].message}</p>}
           </div>
@@ -158,7 +158,7 @@ export default function KYCForm() {
                 type={field === "emergencyPhone" ? "tel" : "text"}
                 {...register(field)}
                 placeholder={field === "emergencyPhone" ? "08123456789" : undefined}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
               />
               {errors[field] && <p className="mt-1 text-xs text-red-600">{errors[field].message}</p>}
             </div>
@@ -168,7 +168,7 @@ export default function KYCForm() {
         <button
           type="button"
           onClick={nextStep}
-          className="w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white hover:bg-primary-700"
+          className="w-full rounded-xl bg-primary-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-primary-700"
         >
           Selanjutnya
         </button>
@@ -219,7 +219,7 @@ export default function KYCForm() {
         type="button"
         onClick={handleSubmit(onSubmit)}
         disabled={submitting}
-        className="w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+        className="w-full rounded-xl bg-primary-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
       >
         {submitting ? "Mengirim..." : "Ajukan Pembiayaan"}
       </button>

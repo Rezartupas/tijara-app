@@ -25,7 +25,7 @@ export default function SimulationCalculator({ product, onSimulationChange }: Pr
   );
 
   return (
-    <div className="space-y-4 rounded-lg border bg-white p-4 shadow-sm">
+    <div className="space-y-4 rounded-xl border bg-white p-4 shadow-sm">
       <label className="block text-sm font-medium text-gray-700">
         Pilih Tenor Cicilan
       </label>

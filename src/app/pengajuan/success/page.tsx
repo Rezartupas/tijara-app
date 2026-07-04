@@ -13,7 +13,7 @@ export default function SuccessPage() {
         Pengajuan pembiayaan Anda sedang diproses. Tim Tijara akan menghubungi Anda melalui
         kontak yang didaftarkan.
       </p>
-      <div className="mt-4 rounded-lg bg-gold-100 p-4 text-left text-sm text-gold-800">
+      <div className="mt-4 rounded-xl bg-gold-100 p-4 text-left text-sm text-gold-800">
         <p className="font-medium">Peringatan Syariah</p>
         <p className="mt-1">
           Harga jual dan angsuran bersifat tetap. Tidak ada bunga berbunga (riba).
@@ -23,7 +23,7 @@ export default function SuccessPage() {
       </div>
       <Link
         href="/"
-        className="mt-6 inline-block w-full rounded-lg bg-primary-600 px-6 py-3 font-medium text-white hover:bg-primary-700"
+        className="mt-6 inline-block w-full rounded-xl bg-primary-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-primary-700"
       >
         Ajukan Lagi
       </Link>
