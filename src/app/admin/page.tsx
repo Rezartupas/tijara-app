@@ -4,6 +4,7 @@ import { readdir, readFile } from "fs/promises";
 import path from "path";
 import { checkAuth } from "@/lib/auth";
 import LogoutButton from "@/components/LogoutButton";
+import StatusActions from "@/components/StatusActions";
 
 interface Submission {
   id: string;
@@ -15,6 +16,7 @@ interface Submission {
   tenor?: number;
   angsuran?: number;
   total?: number;
+  status?: string;
 }
 
 async function getSubmissions(): Promise<Submission[]> {
@@ -52,6 +54,7 @@ export default async function AdminPage() {
                 <th className="px-4 py-3 font-medium text-gray-700">NIK</th>
                 <th className="px-4 py-3 font-medium text-gray-700">Tenor</th>
                 <th className="px-4 py-3 font-medium text-gray-700">Angsuran</th>
+                <th className="px-4 py-3 font-medium text-gray-700">Status</th>
                 <th className="px-4 py-3 font-medium text-gray-700"></th>
               </tr>
             </thead>
@@ -67,6 +70,9 @@ export default async function AdminPage() {
                   <td className="px-4 py-3 text-gray-600">{s.nik}</td>
                   <td className="px-4 py-3">{s.tenor ? `${s.tenor} bulan` : "-"}</td>
                   <td className="px-4 py-3">{s.angsuran ? `Rp${s.angsuran.toLocaleString("id-ID")}` : "-"}</td>
+                  <td className="px-4 py-3">
+                    <StatusActions id={s.id} currentStatus={s.status || "pending"} />
+                  </td>
                   <td className="px-4 py-3">
                     <Link href={`/admin/${s.id}`} className="text-primary-600 hover:underline">
                       Detail

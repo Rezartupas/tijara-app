@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { readFile, readdir } from "fs/promises";
 import path from "path";
 import { checkAuth } from "@/lib/auth";
+import StatusActions from "@/components/StatusActions";
 
 interface DetailData {
   id: string;
@@ -20,6 +21,7 @@ interface DetailData {
   tenor?: number;
   angsuran?: number;
   total?: number;
+  status?: string;
 }
 
 async function getSubmission(id: string): Promise<DetailData | null> {
@@ -77,6 +79,12 @@ export default async function DetailPage({ params }: { params: { id: string } })
                 <td className="py-2 text-gray-900">{value}</td>
               </tr>
             ))}
+            <tr className="border-b">
+              <td className="py-2 pr-4 font-medium text-gray-600 w-40">Status</td>
+              <td className="py-2 text-gray-900">
+                <StatusActions id={data.id} currentStatus={data.status || "pending"} />
+              </td>
+            </tr>
           </tbody>
         </table>
       </section>
