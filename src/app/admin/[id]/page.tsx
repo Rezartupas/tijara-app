@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { readFile, readdir } from "fs/promises";
 import path from "path";
+import { checkAuth } from "@/lib/auth";
 
 interface DetailData {
   id: string;
@@ -41,6 +42,7 @@ async function getImageFiles(id: string, nik: string): Promise<{ ktp: string; se
 }
 
 export default async function DetailPage({ params }: { params: { id: string } }) {
+  if (!checkAuth()) redirect("/admin/login");
   const data = await getSubmission(params.id);
   if (!data) notFound();
 

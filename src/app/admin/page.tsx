@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { readdir, readFile } from "fs/promises";
 import path from "path";
+import { checkAuth } from "@/lib/auth";
+import LogoutButton from "@/components/LogoutButton";
 
 interface Submission {
   id: string;
@@ -31,6 +34,7 @@ async function getSubmissions(): Promise<Submission[]> {
 }
 
 export default async function AdminPage() {
+  if (!checkAuth()) redirect("/admin/login");
   const submissions = await getSubmissions();
 
   return (
@@ -74,9 +78,10 @@ export default async function AdminPage() {
           </table>
         </div>
       )}
-      <p className="mt-4 text-xs text-gray-400">
-        Total: {submissions.length} pengajuan
-      </p>
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-xs text-gray-400">Total: {submissions.length} pengajuan</p>
+        <LogoutButton />
+      </div>
     </div>
   );
 }
