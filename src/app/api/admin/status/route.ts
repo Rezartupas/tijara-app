@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
-import { checkAuth } from "@/lib/auth";
+import { checkAuth, getCurrentUsername } from "@/lib/auth";
 
 export async function PATCH(req: NextRequest) {
   if (!checkAuth()) {
@@ -15,13 +15,22 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
+    const username = getCurrentUsername();
+
     const filePath = path.join(process.cwd(), "data/submissions", `${id}.json`);
     const content = await readFile(filePath, "utf-8");
     const data = JSON.parse(content);
+
+    if (status === data.status) {
+      return NextResponse.json({ success: true });
+    }
+
     data.status = status;
+    data.statusUpdatedBy = username || "admin";
+    data.statusUpdatedAt = new Date().toISOString();
     await writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, status, updatedBy: username, updatedAt: data.statusUpdatedAt });
   } catch {
     return NextResponse.json({ error: "Failed to update status" }, { status: 500 });
   }

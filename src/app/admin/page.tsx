@@ -17,6 +17,8 @@ interface Submission {
   angsuran?: number;
   total?: number;
   status?: string;
+  statusUpdatedBy?: string;
+  statusUpdatedAt?: string;
 }
 
 async function getSubmissions(): Promise<Submission[]> {
@@ -71,7 +73,7 @@ export default async function AdminPage() {
                   <td className="px-4 py-3">{s.tenor ? `${s.tenor} bulan` : "-"}</td>
                   <td className="px-4 py-3">{s.angsuran ? `Rp${s.angsuran.toLocaleString("id-ID")}` : "-"}</td>
                   <td className="px-4 py-3">
-                    <StatusActions id={s.id} currentStatus={s.status || "pending"} />
+                    <StatusActions id={s.id} currentStatus={s.status || "pending"} updatedBy={s.statusUpdatedBy} updatedAt={s.statusUpdatedAt} />
                   </td>
                   <td className="px-4 py-3">
                     <Link href={`/admin/${s.id}`} className="text-primary-600 hover:underline">

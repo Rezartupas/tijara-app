@@ -22,6 +22,8 @@ interface DetailData {
   angsuran?: number;
   total?: number;
   status?: string;
+  statusUpdatedBy?: string;
+  statusUpdatedAt?: string;
 }
 
 async function getSubmission(id: string): Promise<DetailData | null> {
@@ -82,7 +84,7 @@ export default async function DetailPage({ params }: { params: { id: string } })
             <tr className="border-b">
               <td className="py-2 pr-4 font-medium text-gray-600 w-40">Status</td>
               <td className="py-2 text-gray-900">
-                <StatusActions id={data.id} currentStatus={data.status || "pending"} />
+                <StatusActions id={data.id} currentStatus={data.status || "pending"} updatedBy={data.statusUpdatedBy} updatedAt={data.statusUpdatedAt} />
               </td>
             </tr>
           </tbody>

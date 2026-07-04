@@ -44,3 +44,16 @@ export function checkAuth(): boolean {
   if (!token) return false;
   return verifyToken(token);
 }
+
+export function getCurrentUsername(): string | null {
+  const store = cookies();
+  const token = store.get(COOKIE_NAME)?.value;
+  if (!token) return null;
+  try {
+    const decoded = Buffer.from(token, "base64").toString("utf-8");
+    const parts = decoded.split(":");
+    return parts[0] || null;
+  } catch {
+    return null;
+  }
+}
