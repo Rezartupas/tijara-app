@@ -18,15 +18,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="flex min-h-screen flex-col bg-gray-50 text-gray-900 antialiased">
         <header className="sticky top-0 z-50 border-b bg-white/95 shadow-sm backdrop-blur">
           <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-            <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+            <Link href="/" className="transition-opacity hover:opacity-80">
               <img src="/images/tijara.png" alt="Tijara" className="h-8 w-auto" />
-              <span className="hidden text-xs text-gray-500 sm:inline">Pembiayaan Syariah</span>
             </Link>
-            <nav className="flex items-center gap-4 text-sm">
-              <Link href="/" className="text-gray-600 transition-colors hover:text-primary-600">Beranda</Link>
-              <Link href="/simulasi" className="text-gray-600 transition-colors hover:text-primary-600">Simulasi</Link>
-              <Link href="/pengajuan" className="text-gray-600 transition-colors hover:text-primary-600">Pengajuan</Link>
-            </nav>
+            <Link
+              href="/tentang-kami"
+              className="rounded-lg border border-primary-600 px-4 py-1.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
+            >
+              Tentang Kami
+            </Link>
           </div>
         </header>
         <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-8">{children}</main>
