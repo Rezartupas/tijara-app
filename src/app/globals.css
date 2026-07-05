@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes gentle-bounce {
+  0%, 90%, 100% { transform: translateY(0); }
+  93% { transform: translateY(-10px); }
+  96% { transform: translateY(0); }
+  98% { transform: translateY(-5px); }
+}
+
+.animate-gentle-bounce {
+  animation: gentle-bounce 4s ease-in-out infinite;
+}
