@@ -1,132 +1,58 @@
-### Task 1: Project Scaffolding & Configuration
+### Task 1: Update Header di layout.tsx
 
 **Files:**
-- Create: `package.json`
-- Create: `tsconfig.json`
-- Create: `next.config.js`
-- Create: `tailwind.config.ts`
-- Create: `postcss.config.js`
-- Create: `src/app/layout.tsx`
-- Create: `src/app/globals.css`
-- Create: `src/app/page.tsx` (placeholder)
-- Modify: None
+- Modify: `src/app/layout.tsx:19-31`
 
 **Interfaces:**
-- Consumes: nothing
-- Produces: working Next.js dev server with Tailwind, basic root layout with Indonesian-language header
+- Consumes: —
+- Produces: Header baru dengan tombol "Tentang Kami"
 
-- [ ] **Step 1: Initialize Next.js project with TypeScript and Tailwind**
+- [ ] **Step 1: Edit header — hapus tagline & nav, tambah tombol Tentang Kami**
 
-```bash
-# From tijara-app root
-npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --use-npm --no-turbopack
-```
+Ubah bagian header (lines 19-31) dari:
 
-If the directory is non-empty, use `--force` or initialize manually:
-
-```bash
-npm init -y
-npm install next@14 react react-dom
-npm install -D typescript @types/node @types/react @types/react-dom tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-```
-
-- [ ] **Step 2: Configure tailwind.config.ts**
-
-Edit `tailwind.config.ts`:
-
-```typescript
-import type { Config } from "tailwindcss";
-
-const config: Config = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        primary: { 50: "#f0fdf4", 500: "#22c55e", 600: "#16a34a", 700: "#15803d" },
-        gold: { 500: "#eab308", 600: "#ca8a04" },
-      },
-    },
-  },
-  plugins: [],
-};
-export default config;
-```
-
-- [ ] **Step 3: Write root layout with Indonesian metadata**
-
-Edit `src/app/layout.tsx`:
-
-```typescript
-import type { Metadata } from "next";
-import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "Tijara — Pembiayaan Syariah",
-  description: "Platform pembiayaan syariah berbasis link e-commerce. Beli sekarang, bayar cicil dengan akad syariah.",
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="id">
-      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-        <header className="border-b bg-white shadow-sm">
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-            <h1 className="text-xl font-bold text-primary-600">Tijara</h1>
-            <span className="text-xs text-gray-500">Pembiayaan Syariah</span>
+```tsx
+        <header className="sticky top-0 z-50 border-b bg-white/95 shadow-sm backdrop-blur">
+          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+            <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+              <img src="/images/tijara.png" alt="Tijara" className="h-8 w-auto" />
+              <span className="hidden text-xs text-gray-500 sm:inline">Pembiayaan Syariah</span>
+            </Link>
+            <nav className="flex items-center gap-4 text-sm">
+              <Link href="/" className="text-gray-600 transition-colors hover:text-primary-600">Beranda</Link>
+              <Link href="/simulasi" className="text-gray-600 transition-colors hover:text-primary-600">Simulasi</Link>
+              <Link href="/pengajuan" className="text-gray-600 transition-colors hover:text-primary-600">Pengajuan</Link>
+            </nav>
           </div>
         </header>
-        <main className="mx-auto max-w-4xl px-4 py-8">{children}</main>
-      </body>
-    </html>
-  );
-}
 ```
 
-- [ ] **Step 4: Write global CSS with Tailwind directives**
+Menjadi:
 
-Edit `src/app/globals.css`:
-
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+```tsx
+        <header className="sticky top-0 z-50 border-b bg-white/95 shadow-sm backdrop-blur">
+          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+            <Link href="/" className="transition-opacity hover:opacity-80">
+              <img src="/images/tijara.png" alt="Tijara" className="h-8 w-auto" />
+            </Link>
+            <Link
+              href="/tentang-kami"
+              className="rounded-lg border border-primary-600 px-4 py-1.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
+            >
+              Tentang Kami
+            </Link>
+          </div>
+        </header>
 ```
 
-- [ ] **Step 5: Write placeholder landing page**
+- [ ] **Step 2: Verifikasi tidak ada broken link atau syntax error**
 
-Edit `src/app/page.tsx`:
+Run: `npm run lint`
+Expected: No errors
 
-```typescript
-export default function HomePage() {
-  return (
-    <section className="flex flex-col items-center text-center">
-      <h2 className="text-2xl font-semibold">Belanja Sekarang, Bayar Nanti</h2>
-      <p className="mt-2 text-gray-600">
-        Tempelkan tautan produk marketplace untuk mulai simulasi cicilan syariah.
-      </p>
-    </section>
-  );
-}
-```
-
-- [ ] **Step 6: Verify dev server starts**
+- [ ] **Step 3: Commit**
 
 ```bash
-npm run dev
+git add src/app/layout.tsx
+git commit -m "refactor(header): simplify — remove tagline, nav, add Tentang Kami button"
 ```
-Open browser to `http://localhost:3000` — confirm page renders with header "Tijara" and subtitle.
-
-- [ ] **Step 7: Commit**
-
-```bash
-git init
-git add -A
-git commit -m "chore: scaffold Next.js project with Tailwind and root layout"
-```
-
----
