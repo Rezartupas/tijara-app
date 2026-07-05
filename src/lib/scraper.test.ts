@@ -10,8 +10,16 @@ describe("isAllowedMarketplace", () => {
     expect(isAllowedMarketplace("https://shopee.co.id/product/123")).toBe(true);
   });
 
+  it("accepts lazada.co.id URLs", () => {
+    expect(isAllowedMarketplace("https://lazada.co.id/products/123")).toBe(true);
+  });
+
+  it("accepts blibli.com URLs", () => {
+    expect(isAllowedMarketplace("https://blibli.com/product/123")).toBe(true);
+  });
+
   it("rejects unknown marketplace URLs", () => {
-    expect(isAllowedMarketplace("https://blibli.com/product/123")).toBe(false);
+    expect(isAllowedMarketplace("https://example.com/product/123")).toBe(false);
   });
 
   it("rejects invalid URLs", () => {
