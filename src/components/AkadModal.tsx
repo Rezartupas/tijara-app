@@ -15,7 +15,7 @@ export default function AkadModal({ open, onClose, onAgree }: Props) {
         <h2 className="text-lg font-bold text-gray-900">Akad Murabahah & Wakalah bil Ujrah</h2>
         <div className="mt-4 space-y-3 text-sm leading-relaxed text-gray-700">
           <p>
-            Dengan mengklik "Setuju", Anda menyatakan telah membaca, memahami, dan menyetujui
+            Dengan mengklik {'\u201C'}Setuju{'\u201D'}, Anda menyatakan telah membaca, memahami, dan menyetujui
             seluruh ketentuan akad berikut:
           </p>
           <p>
