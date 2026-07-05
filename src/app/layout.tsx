@@ -31,28 +31,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-8">{children}</main>
         <footer className="bg-primary-700 text-white">
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2">
+          <div className="mx-auto max-w-5xl px-4 py-8">
             <div>
               <img src="/images/tijara.png" alt="Tijara" className="mb-3 h-8 w-auto brightness-0 invert" />
               <p className="text-sm text-primary-100">
                 Platform pembiayaan syariah berbasis link e-commerce. Beli sekarang, bayar cicil dengan akad syariah.
               </p>
-            </div>
-
-            <div>
-              <h3 className="mb-3 text-sm font-semibold tracking-wide uppercase">Kontak</h3>
-              <ul className="space-y-2 text-sm text-primary-100">
-                <li>
-                  <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
-                    WhatsApp: 0812-3456-7890
-                  </a>
-                </li>
-                <li>
-                  <a href="mailto:hello@tijara.id" className="transition-colors hover:text-white">
-                    Email: hello@tijara.id
-                  </a>
-                </li>
-              </ul>
             </div>
           </div>
           <div className="border-t border-primary-600">
