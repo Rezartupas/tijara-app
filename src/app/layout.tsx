@@ -31,21 +31,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-8">{children}</main>
         <footer className="bg-primary-700 text-white">
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-3">
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2">
             <div>
               <img src="/images/tijara.png" alt="Tijara" className="mb-3 h-8 w-auto brightness-0 invert" />
               <p className="text-sm text-primary-100">
                 Platform pembiayaan syariah berbasis link e-commerce. Beli sekarang, bayar cicil dengan akad syariah.
               </p>
             </div>
-            <div>
-              <h3 className="mb-3 text-sm font-semibold tracking-wide uppercase">Navigasi</h3>
-              <ul className="space-y-2 text-sm text-primary-100">
-                <li><Link href="/" className="transition-colors hover:text-white">Beranda</Link></li>
-                <li><Link href="/simulasi" className="transition-colors hover:text-white">Simulasi</Link></li>
-                <li><Link href="/pengajuan" className="transition-colors hover:text-white">Pengajuan</Link></li>
-              </ul>
-            </div>
+
             <div>
               <h3 className="mb-3 text-sm font-semibold tracking-wide uppercase">Kontak</h3>
               <ul className="space-y-2 text-sm text-primary-100">
