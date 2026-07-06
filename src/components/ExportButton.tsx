@@ -1,5 +1,7 @@
 "use client";
 
+import * as XLSX from "xlsx";
+
 interface Row {
   id: string;
   fullName: string;
@@ -12,6 +14,7 @@ interface Row {
   emergencyPhone?: string;
   submittedAt: string;
   status?: string;
+  adminNote?: string;
   statusUpdatedBy?: string;
   statusUpdatedAt?: string;
   tenor?: number;
@@ -25,70 +28,74 @@ interface Props {
   data: Row[];
 }
 
-function escapeCSV(value: unknown): string {
-  if (value == null) return "";
-  const str = String(value);
-  if (str.includes(",") || str.includes("\"") || str.includes("\n")) {
-    return `"${str.replace(/"/g, "\"\"")}"`;
-  }
-  return str;
-}
-
 export default function ExportButton({ data }: Props) {
   function handleExport() {
-    const headers = [
-      "ID", "Tanggal", "Nama Lengkap", "NIK", "No. HP",
-      "Alamat", "Pekerjaan", "Kontak Darurat", "Hubungan", "No. HP Darurat",
-      "Produk", "Harga", "Marketplace",
-      "Tenor", "Angsuran", "Total",
-      "Status", "Diupdate Oleh", "Tgl Update", "Setuju Akad",
+    const formattedData = data.map((r) => ({
+      "ID": r.id,
+      "Tanggal": r.submittedAt ? new Date(r.submittedAt).toLocaleString("id-ID") : "",
+      "Nama Lengkap": r.fullName,
+      "NIK": r.nik,
+      "No. HP": r.phoneNumber || "",
+      "Alamat": r.address || "",
+      "Pekerjaan": r.occupation || "",
+      "Kontak Darurat": r.emergencyName || "",
+      "Hubungan": r.emergencyRelationship || "",
+      "No. HP Darurat": r.emergencyPhone || "",
+      "Produk": r.product?.title || "",
+      "Harga": r.product?.price != null ? r.product.price : "",
+      "Marketplace": r.product?.marketplace || "",
+      "Tenor": r.tenor ?? "",
+      "Angsuran": r.angsuran ?? "",
+      "Total": r.total ?? "",
+      "Status": r.status || "pending",
+      "Catatan Admin": r.adminNote || "",
+      "Diupdate Oleh": r.statusUpdatedBy || "",
+      "Tgl Update": r.statusUpdatedAt ? new Date(r.statusUpdatedAt).toLocaleString("id-ID") : "",
+      "Setuju Akad": r.agreedToAkad ? "Ya" : "Tidak",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+
+    // Set column widths for better readability
+    worksheet["!cols"] = [
+      { wch: 15 }, // ID
+      { wch: 20 }, // Tanggal
+      { wch: 25 }, // Nama Lengkap
+      { wch: 20 }, // NIK
+      { wch: 15 }, // No. HP
+      { wch: 40 }, // Alamat
+      { wch: 20 }, // Pekerjaan
+      { wch: 20 }, // Kontak Darurat
+      { wch: 15 }, // Hubungan
+      { wch: 15 }, // No. HP Darurat
+      { wch: 25 }, // Produk
+      { wch: 15 }, // Harga
+      { wch: 15 }, // Marketplace
+      { wch: 10 }, // Tenor
+      { wch: 15 }, // Angsuran
+      { wch: 15 }, // Total
+      { wch: 15 }, // Status
+      { wch: 40 }, // Catatan Admin
+      { wch: 20 }, // Diupdate Oleh
+      { wch: 20 }, // Tgl Update
+      { wch: 12 }, // Setuju Akad
     ];
 
-    const rows = data.map((r) => [
-      r.id,
-      r.submittedAt ? new Date(r.submittedAt).toLocaleString("id-ID") : "",
-      r.fullName,
-      r.nik,
-      r.phoneNumber || "",
-      r.address || "",
-      r.occupation || "",
-      r.emergencyName || "",
-      r.emergencyRelationship || "",
-      r.emergencyPhone || "",
-      r.product?.title || "",
-      r.product?.price != null ? r.product.price : "",
-      r.product?.marketplace || "",
-      r.tenor ?? "",
-      r.angsuran ?? "",
-      r.total ?? "",
-      r.status || "pending",
-      r.statusUpdatedBy || "",
-      r.statusUpdatedAt ? new Date(r.statusUpdatedAt).toLocaleString("id-ID") : "",
-      r.agreedToAkad ? "Ya" : "Tidak",
-    ]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Pengajuan");
 
-    const csvContent = [
-      headers.map(escapeCSV).join(","),
-      ...rows.map((row) => row.map(escapeCSV).join(",")),
-    ].join("\n");
-
-    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `data-pengajuan-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    XLSX.writeFile(workbook, `data-pengajuan-${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
   return (
     <button
       onClick={handleExport}
-      className="rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
+      className="flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 transition-colors"
     >
-      Export CSV
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      Export Excel
     </button>
   );
 }

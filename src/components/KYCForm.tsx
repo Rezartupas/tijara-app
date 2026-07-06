@@ -139,9 +139,9 @@ export default function KYCForm() {
               type={field === "phoneNumber" ? "tel" : "text"}
               {...register(field)}
               placeholder={field === "phoneNumber" ? "08123456789" : undefined}
-              className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50/50 px-4 py-3.5 text-sm shadow-inner transition-all focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/20"
             />
-            {errors[field] && <p className="mt-1 text-xs text-red-600">{errors[field].message}</p>}
+            {errors[field] && <p className="mt-1.5 text-xs font-medium text-red-600 animate-fade-in-up">{errors[field].message}</p>}
           </div>
         ))}
 
@@ -158,9 +158,9 @@ export default function KYCForm() {
                 type={field === "emergencyPhone" ? "tel" : "text"}
                 {...register(field)}
                 placeholder={field === "emergencyPhone" ? "08123456789" : undefined}
-                className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50/50 px-4 py-3.5 text-sm shadow-inner transition-all focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/20"
               />
-              {errors[field] && <p className="mt-1 text-xs text-red-600">{errors[field].message}</p>}
+              {errors[field] && <p className="mt-1.5 text-xs font-medium text-red-600 animate-fade-in-up">{errors[field].message}</p>}
             </div>
           ))}
         </div>
@@ -168,9 +168,10 @@ export default function KYCForm() {
         <button
           type="button"
           onClick={nextStep}
-          className="w-full rounded-xl bg-primary-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-primary-700"
+          className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 px-8 py-4 font-bold text-white shadow-soft transition-all hover:scale-[1.02] hover:shadow-glow focus:outline-none focus:ring-4 focus:ring-primary-500/30"
         >
-          Selanjutnya
+          Langkah Selanjutnya
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
         </button>
       </form>
     );
@@ -219,9 +220,19 @@ export default function KYCForm() {
         type="button"
         onClick={handleSubmit(onSubmit)}
         disabled={submitting}
-        className="w-full rounded-xl bg-primary-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
+        className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 px-8 py-4 font-bold text-white shadow-soft transition-all hover:scale-[1.02] hover:shadow-glow focus:outline-none focus:ring-4 focus:ring-primary-500/30 disabled:opacity-70 disabled:hover:scale-100 disabled:hover:shadow-soft"
       >
-        {submitting ? "Mengirim..." : "Ajukan Pembiayaan"}
+        {submitting ? (
+          <>
+            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            Mengirim Data...
+          </>
+        ) : (
+          <>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Kirim Pengajuan
+          </>
+        )}
       </button>
       <AkadModal open={showAkad} onClose={() => setShowAkad(false)} onAgree={handleAgree} />
     </div>

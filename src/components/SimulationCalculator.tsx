@@ -25,28 +25,36 @@ export default function SimulationCalculator({ product, onSimulationChange }: Pr
   );
 
   return (
-    <div className="space-y-4 rounded-xl border bg-white p-4 shadow-sm">
-      <label className="block text-sm font-medium text-gray-700">
-        Pilih Tenor Cicilan
-      </label>
-      <div className="flex items-center gap-4">
+    <div className="space-y-5 rounded-2xl border border-gray-100 bg-white p-6 shadow-soft">
+      <div className="flex items-center justify-between">
+        <label className="block text-base font-semibold text-gray-900">
+          Pilih Tenor Cicilan
+        </label>
+        <div className="inline-flex items-center rounded-lg bg-primary-50 px-3 py-1.5 border border-primary-100">
+          <input
+            type="number"
+            min={MIN_TENOR}
+            max={MAX_TENOR}
+            value={tenor}
+            onChange={(e) => updateTenor(Number(e.target.value))}
+            className="w-12 bg-transparent text-center font-bold text-primary-700 focus:outline-none"
+          />
+          <span className="text-sm font-medium text-primary-600 ml-1">bulan</span>
+        </div>
+      </div>
+      <div className="pt-2 pb-1 relative">
         <input
           type="range"
           min={MIN_TENOR}
           max={MAX_TENOR}
           value={tenor}
           onChange={(e) => updateTenor(Number(e.target.value))}
-          className="flex-1 accent-primary-600"
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 accent-primary-600"
         />
-        <input
-          type="number"
-          min={MIN_TENOR}
-          max={MAX_TENOR}
-          value={tenor}
-          onChange={(e) => updateTenor(Number(e.target.value))}
-          className="w-16 rounded border px-2 py-1 text-center text-sm"
-        />
-        <span className="text-sm text-gray-500">bulan</span>
+        <div className="flex justify-between mt-2 text-xs font-medium text-gray-400">
+          <span>{MIN_TENOR} bln</span>
+          <span>{MAX_TENOR} bln</span>
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-100;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-soft;
+  }
+}
+
 @keyframes gentle-bounce {
   0%, 90%, 100% { transform: translateY(0); }
   93% { transform: translateY(-10px); }

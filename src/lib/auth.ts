@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createHash } from "crypto";
 
 const COOKIE_NAME = "tijara_admin_token";
+const ADMIN_ROLE = "admin";
 
 function getCredentials(): { username: string; password: string } {
   return {
@@ -10,22 +11,28 @@ function getCredentials(): { username: string; password: string } {
   };
 }
 
-function generateToken(username: string): string {
+function generateToken(username: string, role: string = ADMIN_ROLE): string {
   const secret = process.env.ADMIN_PASSWORD || "tijara123";
-  const payload = `${username}:${Date.now()}:${secret}`;
+  const payload = `${username}:${role}:${Date.now()}:${secret}`;
   return Buffer.from(payload).toString("base64");
 }
 
-function verifyToken(token: string): boolean {
+/**
+ * Verifies a token and returns its parsed parts.
+ * Returns null if verification fails.
+ */
+function verifyToken(token: string): { username: string; role: string } | null {
   try {
     const decoded = Buffer.from(token, "base64").toString("utf-8");
     const parts = decoded.split(":");
-    if (parts.length < 2) return false;
-    const [username] = parts;
+    if (parts.length < 4) return null;
+    const [username, role] = parts;
     const { username: expected } = getCredentials();
-    return username === expected;
+    // Only accept tokens that match the configured admin username.
+    if (username !== expected) return null;
+    return { username, role };
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -42,7 +49,7 @@ export function checkAuth(): boolean {
   const store = cookies();
   const token = store.get(COOKIE_NAME)?.value;
   if (!token) return false;
-  return verifyToken(token);
+  return verifyToken(token) !== null;
 }
 
 export function getCurrentUsername(): string | null {

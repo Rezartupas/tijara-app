@@ -22,6 +22,7 @@ interface Submission {
   status?: string;
   statusUpdatedBy?: string;
   statusUpdatedAt?: string;
+  adminNote?: string;
   tenor?: number;
   angsuran?: number;
   total?: number;

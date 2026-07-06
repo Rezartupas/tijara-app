@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER || "6281234567890";
 
 export default function WhatsAppButton() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+  if (pathname && pathname.startsWith("/admin")) return null;
 
   function handleSend() {
     if (!message.trim()) return;

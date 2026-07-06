@@ -1,17 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
-import { checkAuth, getCurrentUsername } from "@/lib/auth";
+import { checkAdminAuth, getCurrentUsername } from "@/lib/auth";
+import { rateLimit } from "@/middleware/rateLimit";
+import { isValidId } from "@/lib/validation";
 
 export async function PATCH(req: NextRequest) {
-  if (!checkAuth()) {
+  // Rate limiting
+  const limitResult = rateLimit(req);
+  if (limitResult) return limitResult;
+
+  // Authentication
+  if (!checkAdminAuth()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const { id, status } = await req.json();
+  // Simple CSRF protection placeholder
+  const csrfHeader = req.headers.get("x-csrf-token");
+  if (!csrfHeader) {
+    return NextResponse.json({ error: "Missing CSRF token" }, { status: 403 });
+  }
 
-    if (!id || !["pending", "diterima", "ditolak"].includes(status)) {
+  try {
+    const { id, status, note } = await req.json();
+
+    if (!id || !isValidId(id) || !["pending", "diterima", "ditolak"].includes(status)) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
@@ -21,16 +34,16 @@ export async function PATCH(req: NextRequest) {
     const content = await readFile(filePath, "utf-8");
     const data = JSON.parse(content);
 
-    if (status === data.status) {
-      return NextResponse.json({ success: true });
-    }
-
+    // Update data
     data.status = status;
+    if (note !== undefined) {
+      data.adminNote = note;
+    }
     data.statusUpdatedBy = username || "admin";
     data.statusUpdatedAt = new Date().toISOString();
     await writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
 
-    return NextResponse.json({ success: true, status, updatedBy: username, updatedAt: data.statusUpdatedAt });
+    return NextResponse.json({ success: true, status, note: data.adminNote, updatedBy: username, updatedAt: data.statusUpdatedAt });
   } catch {
     return NextResponse.json({ error: "Failed to update status" }, { status: 500 });
   }
