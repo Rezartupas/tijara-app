@@ -8,6 +8,14 @@ interface Props {
   currentStatus: string;
   updatedBy?: string;
   updatedAt?: string;
+  /**
+   * Optional admin note displayed/edited for the submission.
+   */
+  currentNote?: string;
+  /**
+   * Whether the note input UI should be shown (admin page).
+   */
+  showNoteInput?: boolean;
 }
 
 const STATUS_STYLES: Record<string, string> = {

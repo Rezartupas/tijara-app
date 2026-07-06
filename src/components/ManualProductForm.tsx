@@ -42,6 +42,7 @@ export default function ManualProductForm({ onSubmit, initialUrl = "" }: Props) 
       title: title.trim(),
       price: numericPrice,
       image: "", // Empty fallback image
+      description: "", // Added empty description to satisfy Product type
       marketplace,
       url: url.trim(),
     });
