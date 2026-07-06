@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateCredentials, createSessionCookie } from "@/lib/auth";
-import { randomBytes } from "crypto";
-
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,18 +17,10 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({ success: true });
     response.cookies.set(cookie.name, cookie.value, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false,
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 8,
-    });
-    // Set CSRF token cookie for subsequent requests
-    const csrfToken = randomBytes(24).toString('base64');
-    response.cookies.set('csrf_token', csrfToken, {
-      httpOnly: false,
-      sameSite: 'strict',
-      path: '/',
-      // No explicit maxAge – session cookie
     });
     return response;
   } catch {

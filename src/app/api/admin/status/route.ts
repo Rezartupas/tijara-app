@@ -1,30 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
-import { checkAdminAuth, getCurrentUsername } from "@/lib/auth";
-import { rateLimit } from "@/middleware/rateLimit";
-import { isValidId } from "@/lib/validation";
+import { checkAuth, getCurrentUsername } from "@/lib/auth";
 
 export async function PATCH(req: NextRequest) {
-  // Rate limiting
-  const limitResult = rateLimit(req);
-  if (limitResult) return limitResult;
-
-  // Authentication
-  if (!checkAdminAuth()) {
+  if (!checkAuth()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // Simple CSRF protection placeholder
-  const csrfHeader = req.headers.get("x-csrf-token");
-  if (!csrfHeader) {
-    return NextResponse.json({ error: "Missing CSRF token" }, { status: 403 });
   }
 
   try {
     const { id, status, note } = await req.json();
 
-    if (!id || !isValidId(id) || !["pending", "diterima", "ditolak"].includes(status)) {
+    if (!id || !["pending", "diterima", "ditolak"].includes(status)) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
