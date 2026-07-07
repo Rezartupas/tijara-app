@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { createHash } from "crypto";
 
 const COOKIE_NAME = "tijara_admin_token";
 

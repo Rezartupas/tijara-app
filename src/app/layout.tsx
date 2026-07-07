@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import WhatsAppButton from "@/components/layout/WhatsAppButton";
 
 const inter = Inter({ 
   subsets: ["latin"], 
@@ -27,9 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id" className={`${inter.variable} ${outfit.variable} font-sans`}>
       <body className="flex min-h-screen flex-col antialiased bg-gray-50">
         <header className="sticky top-0 z-50 border-b border-white/40 bg-white/80 shadow-sm backdrop-blur-lg transition-all duration-300">
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:py-4">
+          <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:py-4" aria-label="Navigasi utama">
             <Link href="/" className="tap-active transition-transform hover:scale-105 hover:opacity-90">
-              <img src="/images/tijara.png" alt="Tijara" className="h-7 sm:h-8 w-auto" />
+              <img src="/images/tijara.png" alt="Tijara — Beranda" className="h-7 sm:h-8 w-auto" />
             </Link>
             <Link
               href="/tentang-kami"
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             >
               Tentang Kami
             </Link>
-          </div>
+          </nav>
         </header>
         <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-6 sm:py-10">{children}</main>
         <footer className="bg-gradient-to-br from-primary-800 to-primary-900 text-white shadow-inner mt-auto">

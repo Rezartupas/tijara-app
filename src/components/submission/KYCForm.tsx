@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import AkadModal from "./AkadModal";
+import AkadModal from "@/components/submission/AkadModal";
+import { ArrowRightIcon, CheckCircleIcon, SpinnerIcon } from "@/components/ui/Icons";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png"];
@@ -128,25 +129,28 @@ export default function KYCForm() {
           <span className="h-2.5 w-2.5 rounded-full bg-gray-300" />
         </div>
         <p className="mb-4 text-center text-xs text-gray-500">Langkah 1 dari 2</p>
-        <h2 className="text-lg font-semibold text-gray-900">Data Diri</h2>
-        {MAIN_FIELDS.map((field) => (
-          <div key={field}>
-            <label className="block text-sm font-medium text-gray-700">
-              {FIELD_LABELS[field]}
-            </label>
-            <input
-              id={field}
-              type={field === "phoneNumber" ? "tel" : "text"}
-              {...register(field)}
-              placeholder={field === "phoneNumber" ? "08123456789" : undefined}
-              className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50/50 px-4 py-3.5 text-sm shadow-inner transition-all focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/20"
-            />
-            {errors[field] && <p className="mt-1.5 text-xs font-medium text-red-600 animate-fade-in-up">{errors[field].message}</p>}
-          </div>
-        ))}
 
-        <div className="border-t pt-4">
-          <h3 className="text-sm font-semibold text-gray-800">Kontak Darurat</h3>
+        <fieldset className="space-y-4">
+          <legend className="text-lg font-semibold text-gray-900">Data Diri</legend>
+          {MAIN_FIELDS.map((field) => (
+            <div key={field}>
+              <label className="block text-sm font-medium text-gray-700">
+                {FIELD_LABELS[field]}
+              </label>
+              <input
+                id={field}
+                type={field === "phoneNumber" ? "tel" : "text"}
+                {...register(field)}
+                placeholder={field === "phoneNumber" ? "08123456789" : undefined}
+                className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50/50 px-4 py-3.5 text-sm shadow-inner transition-all focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/20"
+              />
+              {errors[field] && <p className="mt-1.5 text-xs font-medium text-red-600 animate-fade-in-up">{errors[field].message}</p>}
+            </div>
+          ))}
+        </fieldset>
+
+        <fieldset className="border-t pt-4 space-y-3">
+          <legend className="text-sm font-semibold text-gray-800">Kontak Darurat</legend>
           <p className="mb-3 text-xs text-gray-500">Siapa yang bisa dihubungi jika terjadi sesuatu?</p>
           {EMERGENCY_FIELDS.map((field) => (
             <div key={field} className="mt-3">
@@ -163,7 +167,7 @@ export default function KYCForm() {
               {errors[field] && <p className="mt-1.5 text-xs font-medium text-red-600 animate-fade-in-up">{errors[field].message}</p>}
             </div>
           ))}
-        </div>
+        </fieldset>
 
         <button
           type="button"
@@ -171,7 +175,7 @@ export default function KYCForm() {
           className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 px-8 py-4 font-bold text-white shadow-soft transition-all hover:scale-[1.02] hover:shadow-glow focus:outline-none focus:ring-4 focus:ring-primary-500/30"
         >
           Langkah Selanjutnya
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+          <ArrowRightIcon className="w-5 h-5" />
         </button>
       </form>
     );
@@ -195,26 +199,31 @@ export default function KYCForm() {
           &larr; Kembali
         </button>
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Foto KTP</label>
-        <input
-          type="file"
-          accept="image/jpeg,image/png"
-          onChange={(e) => { setKtpFile(e.target.files?.[0] || null); setKtpError(""); }}
-          className="mt-1 w-full text-sm"
-        />
-        {ktpError && <p className="mt-1 text-xs text-red-600">{ktpError}</p>}
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Swafoto dengan KTP</label>
-        <input
-          type="file"
-          accept="image/jpeg,image/png"
-          onChange={(e) => { setSelfieFile(e.target.files?.[0] || null); setSelfieError(""); }}
-          className="mt-1 w-full text-sm"
-        />
-        {selfieError && <p className="mt-1 text-xs text-red-600">{selfieError}</p>}
-      </div>
+
+      <fieldset className="space-y-4">
+        <legend className="sr-only">Upload Dokumen</legend>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Foto KTP</label>
+          <input
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={(e) => { setKtpFile(e.target.files?.[0] || null); setKtpError(""); }}
+            className="mt-1 w-full text-sm"
+          />
+          {ktpError && <p className="mt-1 text-xs text-red-600">{ktpError}</p>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Swafoto dengan KTP</label>
+          <input
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={(e) => { setSelfieFile(e.target.files?.[0] || null); setSelfieError(""); }}
+            className="mt-1 w-full text-sm"
+          />
+          {selfieError && <p className="mt-1 text-xs text-red-600">{selfieError}</p>}
+        </div>
+      </fieldset>
+
       {submitError && <p className="text-sm text-red-600">{submitError}</p>}
       <button
         type="button"
@@ -224,12 +233,12 @@ export default function KYCForm() {
       >
         {submitting ? (
           <>
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <SpinnerIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
             Mengirim Data...
           </>
         ) : (
           <>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <CheckCircleIcon className="w-5 h-5" />
             Kirim Pengajuan
           </>
         )}

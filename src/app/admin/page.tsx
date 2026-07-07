@@ -3,32 +3,11 @@ import { redirect } from "next/navigation";
 import { readdir, readFile } from "fs/promises";
 import path from "path";
 import { checkAuth } from "@/lib/auth";
-import LogoutButton from "@/components/LogoutButton";
-import StatusActions from "@/components/StatusActions";
-import AdminFilters from "@/components/AdminFilters";
-import ExportButton from "@/components/ExportButton";
-
-interface Submission {
-  id: string;
-  fullName: string;
-  nik: string;
-  phoneNumber?: string;
-  address?: string;
-  occupation?: string;
-  emergencyName?: string;
-  emergencyRelationship?: string;
-  emergencyPhone?: string;
-  submittedAt: string;
-  status?: string;
-  statusUpdatedBy?: string;
-  statusUpdatedAt?: string;
-  adminNote?: string;
-  tenor?: number;
-  angsuran?: number;
-  total?: number;
-  agreedToAkad?: boolean;
-  product?: { title?: string; price?: number; marketplace?: string };
-}
+import LogoutButton from "@/components/admin/LogoutButton";
+import StatusActions from "@/components/admin/StatusActions";
+import AdminFilters from "@/components/admin/AdminFilters";
+import ExportButton from "@/components/admin/ExportButton";
+import type { Submission } from "@/lib/types";
 
 async function getSubmissions(): Promise<Submission[]> {
   const dir = path.join(process.cwd(), "data/submissions");
@@ -85,41 +64,44 @@ export default async function AdminPage({
   });
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
+    <article>
+      <header className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">Admin — Data Pengajuan</h1>
         <ExportButton data={filtered} />
-      </div>
+      </header>
 
       <AdminFilters />
 
-      <p className="mb-3 text-sm text-gray-500">
+      <p className="mb-3 text-sm text-gray-500" aria-live="polite">
         Menampilkan {filtered.length} dari {allSubmissions.length} pengajuan
       </p>
 
       {filtered.length === 0 ? (
-        <p className="text-gray-500">Tidak ada pengajuan yang sesuai filter.</p>
+        <p className="text-gray-500" role="status">Tidak ada pengajuan yang sesuai filter.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border">
+        <section className="overflow-x-auto rounded-xl border" aria-label="Tabel daftar pengajuan">
           <table className="w-full text-left text-sm">
+            <caption className="sr-only">Daftar pengajuan pembiayaan Tijara</caption>
             <thead className="bg-primary-100">
               <tr>
-                <th className="px-4 py-3 font-semibold text-primary-800">Tanggal</th>
-                <th className="px-4 py-3 font-semibold text-primary-800">Nama</th>
-                <th className="px-4 py-3 font-semibold text-primary-800">NIK</th>
-                <th className="px-4 py-3 font-semibold text-primary-800">Tenor</th>
-                <th className="px-4 py-3 font-semibold text-primary-800">Angsuran</th>
-                <th className="px-4 py-3 font-semibold text-primary-800">Status</th>
-                <th className="px-4 py-3 font-semibold text-primary-800"></th>
+                <th scope="col" className="px-4 py-3 font-semibold text-primary-800">Tanggal</th>
+                <th scope="col" className="px-4 py-3 font-semibold text-primary-800">Nama</th>
+                <th scope="col" className="px-4 py-3 font-semibold text-primary-800">NIK</th>
+                <th scope="col" className="px-4 py-3 font-semibold text-primary-800">Tenor</th>
+                <th scope="col" className="px-4 py-3 font-semibold text-primary-800">Angsuran</th>
+                <th scope="col" className="px-4 py-3 font-semibold text-primary-800">Status</th>
+                <th scope="col" className="px-4 py-3 font-semibold text-primary-800"><span className="sr-only">Aksi</span></th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {filtered.map((s) => (
-                <tr key={s.id} className="hover:bg-gray-50">
+                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 text-gray-600">
-                    {new Date(s.submittedAt).toLocaleDateString("id-ID", {
-                      day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
-                    })}
+                    <time dateTime={s.submittedAt}>
+                      {new Date(s.submittedAt).toLocaleDateString("id-ID", {
+                        day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+                      })}
+                    </time>
                   </td>
                   <td className="px-4 py-3 font-medium">{s.fullName}</td>
                   <td className="px-4 py-3 text-gray-600">{s.nik}</td>
@@ -134,7 +116,7 @@ export default async function AdminPage({
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <Link href={`/admin/${s.id}`} className="text-primary-600 hover:underline">
+                    <Link href={`/admin/${s.id}`} className="text-primary-600 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-2 py-1">
                       Detail
                     </Link>
                   </td>
@@ -142,12 +124,12 @@ export default async function AdminPage({
               ))}
             </tbody>
           </table>
-        </div>
+        </section>
       )}
-      <div className="mt-4 flex items-center justify-between">
+      <footer className="mt-4 flex items-center justify-between">
         <p className="text-xs text-gray-400">Total: {allSubmissions.length} pengajuan</p>
         <LogoutButton />
-      </div>
-    </div>
+      </footer>
+    </article>
   );
 }

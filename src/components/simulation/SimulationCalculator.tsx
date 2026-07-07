@@ -4,12 +4,12 @@ import { useState, useCallback } from "react";
 import { MARGIN_RATE, MAX_TENOR, MIN_TENOR } from "@/lib/constants";
 import type { Product, SimulationResult } from "@/lib/types";
 
-interface Props {
+interface SimulationCalculatorProps {
   product: Product;
   onSimulationChange: (result: SimulationResult) => void;
 }
 
-export default function SimulationCalculator({ product, onSimulationChange }: Props) {
+export default function SimulationCalculator({ product, onSimulationChange }: SimulationCalculatorProps) {
   const [tenor, setTenor] = useState(12);
 
   const updateTenor = useCallback(
@@ -25,18 +25,20 @@ export default function SimulationCalculator({ product, onSimulationChange }: Pr
   );
 
   return (
-    <div className="space-y-6 rounded-2xl border border-gray-100 bg-white/90 p-5 sm:p-6 shadow-soft backdrop-blur-md transition-all">
+    <section className="space-y-6 rounded-2xl border border-gray-100 bg-white/90 p-5 sm:p-6 shadow-soft backdrop-blur-md transition-all" aria-label="Kalkulator tenor">
       <div className="flex items-center justify-between">
-        <label className="block text-sm sm:text-base font-semibold text-gray-900">
+        <label htmlFor="tenor-slider" className="block text-sm sm:text-base font-semibold text-gray-900">
           Pilih Tenor Cicilan
         </label>
         <div className="inline-flex items-center rounded-xl bg-primary-50 px-3 py-2 border border-primary-100 shadow-inner">
           <input
+            id="tenor-input"
             type="number"
             min={MIN_TENOR}
             max={MAX_TENOR}
             value={tenor}
             onChange={(e) => updateTenor(Number(e.target.value))}
+            aria-label="Jumlah bulan tenor"
             className="w-10 sm:w-12 bg-transparent text-center text-base sm:text-lg font-bold text-primary-700 focus:outline-none"
           />
           <span className="text-xs sm:text-sm font-semibold text-primary-600 ml-1">bulan</span>
@@ -44,11 +46,13 @@ export default function SimulationCalculator({ product, onSimulationChange }: Pr
       </div>
       <div className="pt-4 pb-2 relative">
         <input
+          id="tenor-slider"
           type="range"
           min={MIN_TENOR}
           max={MAX_TENOR}
           value={tenor}
           onChange={(e) => updateTenor(Number(e.target.value))}
+          aria-label="Slider tenor cicilan"
           className="w-full h-3 sm:h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 accent-primary-600 shadow-inner hover:accent-primary-500 active:accent-primary-700 transition-all"
         />
         <div className="flex justify-between mt-3 text-xs font-semibold text-gray-400">
@@ -57,6 +61,6 @@ export default function SimulationCalculator({ product, onSimulationChange }: Pr
           <span>{MAX_TENOR} bln</span>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
