@@ -73,4 +73,6 @@ export interface SubmissionDetail {
   adminNote?: string;
   statusUpdatedBy?: string;
   statusUpdatedAt?: string;
+  ktpUrl?: string;
+  selfieUrl?: string;
 }

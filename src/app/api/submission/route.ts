@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cloudinary } from "@/lib/cloudinary";
 
 const REQUIRED_FIELDS = ["fullName", "nik", "phoneNumber", "address", "occupation", "emergencyName", "emergencyRelationship", "emergencyPhone"] as const;
 
-function extFromType(mime: string): string {
-  if (mime === "image/png") return ".png";
-  if (mime === "image/jpeg" || mime === "image/jpg") return ".jpg";
-  return ".bin";
+async function uploadToCloudinary(file: File, folder: string): Promise<string> {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: "image" },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result!.secure_url);
+      }
+    );
+    stream.end(buffer);
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -29,7 +38,6 @@ export async function POST(request: NextRequest) {
     await fs.mkdir(submissionsDir, { recursive: true });
 
     const id = `submission-${Date.now()}`;
-    const nik = formData.get("nik") as string;
 
     const data: Record<string, unknown> = {
       id,
@@ -57,20 +65,16 @@ export async function POST(request: NextRequest) {
     const total = formData.get("total");
     if (total) data.total = Number(total);
 
-    await fs.writeFile(`${submissionsDir}/${id}.json`, JSON.stringify(data, null, 2));
-
     const ktp = formData.get("ktp") as File | null;
     if (ktp) {
-      const buffer = Buffer.from(await ktp.arrayBuffer());
-      const ext = extFromType(ktp.type);
-      await fs.writeFile(`${submissionsDir}/${id}-ktp${ext}`, buffer);
+      data.ktpUrl = await uploadToCloudinary(ktp, "tijara/ktp");
     }
     const selfie = formData.get("selfie") as File | null;
     if (selfie) {
-      const buffer = Buffer.from(await selfie.arrayBuffer());
-      const ext = extFromType(selfie.type);
-      await fs.writeFile(`${submissionsDir}/${id}-selfie${ext}`, buffer);
+      data.selfieUrl = await uploadToCloudinary(selfie, "tijara/selfie");
     }
+
+    await fs.writeFile(`${submissionsDir}/${id}.json`, JSON.stringify(data, null, 2));
 
     return NextResponse.json({ success: true, id });
   } catch (err) {

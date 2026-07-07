@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { readFile, readdir } from "fs/promises";
+import { readFile } from "fs/promises";
 import path from "path";
 import { checkAuth } from "@/lib/auth";
 import StatusActions from "@/components/admin/StatusActions";
@@ -16,24 +16,10 @@ async function getSubmission(id: string): Promise<SubmissionDetail | null> {
   }
 }
 
-async function getImageFiles(id: string, nik: string): Promise<{ ktp: string; selfie: string }> {
-  const dir = path.join(process.cwd(), "data/submissions");
-  try {
-    const files = await readdir(dir);
-    const ktp = files.find((f) => f.startsWith(`${id}-ktp`)) || "";
-    const selfie = files.find((f) => f.startsWith(`${id}-selfie`)) || "";
-    return { ktp, selfie };
-  } catch {
-    return { ktp: "", selfie: "" };
-  }
-}
-
 export default async function DetailPage({ params }: { params: { id: string } }) {
   if (!checkAuth()) redirect("/admin/login");
   const data = await getSubmission(params.id);
   if (!data) notFound();
-
-  const images = await getImageFiles(params.id, data.nik);
 
   return (
     <article className="mx-auto max-w-2xl">
@@ -148,25 +134,25 @@ export default async function DetailPage({ params }: { params: { id: string } })
         </section>
       )}
 
-      {(images.ktp || images.selfie) && (
+      {(data.ktpUrl || data.selfieUrl) && (
         <section className="mt-4 space-y-4 rounded-xl border bg-white p-6 shadow-sm" aria-labelledby="dokumen-heading">
           <h2 id="dokumen-heading" className="text-lg font-bold text-gray-800">Dokumen</h2>
           <div className="grid grid-cols-2 gap-4">
-            {images.ktp && (
+            {data.ktpUrl && (
               <figure>
                 <figcaption className="mb-1 text-sm font-medium text-gray-600">Foto KTP</figcaption>
                 <img
-                  src={`/api/admin/files/${images.ktp}`}
+                  src={data.ktpUrl}
                   alt="KTP"
                   className="w-full rounded-lg border object-cover"
                 />
               </figure>
             )}
-            {images.selfie && (
+            {data.selfieUrl && (
               <figure>
                 <figcaption className="mb-1 text-sm font-medium text-gray-600">Swafoto dengan KTP</figcaption>
                 <img
-                  src={`/api/admin/files/${images.selfie}`}
+                  src={data.selfieUrl}
                   alt="Selfie"
                   className="w-full rounded-lg border object-cover"
                 />
