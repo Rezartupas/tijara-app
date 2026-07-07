@@ -7,10 +7,11 @@ import LogoutButton from "@/components/admin/LogoutButton";
 import StatusActions from "@/components/admin/StatusActions";
 import AdminFilters from "@/components/admin/AdminFilters";
 import ExportButton from "@/components/admin/ExportButton";
+import { getDataDir } from "@/lib/storage";
 import type { Submission } from "@/lib/types";
 
 async function getSubmissions(): Promise<Submission[]> {
-  const dir = path.join(process.cwd(), "data/submissions");
+  const dir = getDataDir();
   try {
     const files = await readdir(dir);
     const jsonFiles = files.filter((f) => f.endsWith(".json")).sort().reverse();

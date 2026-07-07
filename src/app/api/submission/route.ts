@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
+import { ensureDataDir } from "@/lib/storage";
 
 const REQUIRED_FIELDS = ["fullName", "nik", "phoneNumber", "address", "occupation", "emergencyName", "emergencyRelationship", "emergencyPhone"] as const;
 
@@ -33,9 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Data tidak lengkap: ${missing.join(", ")}.` }, { status: 400 });
     }
 
-    const fs = await import("fs/promises");
-    const submissionsDir = process.cwd() + "/data/submissions";
-    await fs.mkdir(submissionsDir, { recursive: true });
+    const submissionsDir = await ensureDataDir();
 
     const id = `submission-${Date.now()}`;
 
@@ -74,11 +73,12 @@ export async function POST(request: NextRequest) {
       data.selfieUrl = await uploadToCloudinary(selfie, "tijara/selfie");
     }
 
+    const fs = await import("fs/promises");
     await fs.writeFile(`${submissionsDir}/${id}.json`, JSON.stringify(data, null, 2));
 
     return NextResponse.json({ success: true, id });
   } catch (err) {
-    console.error(err);
+    console.error("Submission error:", err);
     return NextResponse.json({ error: "Gagal memproses pengajuan." }, { status: 500 });
   }
 }

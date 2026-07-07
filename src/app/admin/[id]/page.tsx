@@ -4,10 +4,11 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { checkAuth } from "@/lib/auth";
 import StatusActions from "@/components/admin/StatusActions";
+import { getDataDir } from "@/lib/storage";
 import type { SubmissionDetail } from "@/lib/types";
 
 async function getSubmission(id: string): Promise<SubmissionDetail | null> {
-  const filePath = path.join(process.cwd(), "data/submissions", `${id}.json`);
+  const filePath = path.join(getDataDir(), `${id}.json`);
   try {
     const content = await readFile(filePath, "utf-8");
     return JSON.parse(content);
